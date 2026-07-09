@@ -28,6 +28,22 @@ TEMPLATE = r"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Taurus Dreamscapes</title>
+<meta name="description" content="__DESC__">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Taurus Dreamscapes">
+<meta property="og:description" content="__DESC__">
+<meta property="og:url" content="__SITE__/">
+<meta property="og:image" content="__SITE__/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Taurus Dreamscapes">
+<meta name="twitter:description" content="__DESC__">
+<meta name="twitter:image" content="__SITE__/og.png">
+
 <link rel="preconnect" href="https://rsms.me/">
 <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -264,12 +280,18 @@ logo_sm = (f'<img src="data:image/png;base64,{logo_b64}" alt="" class="size-7">'
 # newest comment in the set = how current the data is; rendered relative by rel()
 updated = max(r["created_time"] for r in data)
 
+SITE = "https://taurus-rising-comments.vercel.app"
+DESC = (f"{len(data)} Taurus risings share their Venus, north node, and Saturn "
+        "placements, along with their dreams and the lessons they've attracted.")
+
 html = (TEMPLATE
         .replace("__DATA__", json.dumps(data, ensure_ascii=False))
         .replace("__BAILEY_AVATAR__", bailey_img)
         .replace("__COMMUNION_LOGO_SM__", logo_sm)
         .replace("__COMMUNION_LOGO__", logo_img)
         .replace("__UPDATED__", updated)
+        .replace("__SITE__", SITE)
+        .replace("__DESC__", DESC)
         .replace("__COUNT__", str(len(data))))
 (root / "index.html").write_text(html)
 print(f"wrote index.html ({len(html):,} bytes, {len(data)} records)")
