@@ -13,7 +13,7 @@ fields = ["username","display_name","created_time","digg_count","reply_count",
           "venus_sign","venus_house","nn_sign","nn_house","saturn_sign","saturn_house",
           "dreams","lessons_attracted","life_events","notes","text"]
 with open(root / "data/extracted.csv", "w", newline="") as f:
-    w = csv.DictWriter(f, fieldnames=fields)
+    w = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
     w.writeheader()
     w.writerows(data)
 
