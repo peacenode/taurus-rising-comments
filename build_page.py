@@ -244,7 +244,8 @@ def render_dream_theme_pie(summary):
         theme_id = html_lib.escape(theme["id"])
         interaction_attrs = (
             f'class="dream-theme-slice cursor-pointer transition-opacity duration-150" '
-            f'data-dream-theme="{theme_id}" role="button" tabindex="0" '
+            f'data-dream-theme="{theme_id}" data-chart-opacity="{opacity:.3f}" '
+            'role="button" tabindex="0" '
             f'aria-label="Select {label}" aria-pressed="false" aria-controls="list"'
         )
         if len(nonzero) == 1:
@@ -293,8 +294,8 @@ def render_dream_theme_pie(summary):
         legend.append(f'''
         <li class="border-t border-neutral-200 py-1 first:border-t-0 first:pt-0">
           <button type="button" data-dream-theme="{theme_id}" aria-pressed="false" aria-controls="list"
-            class="dream-theme-option group grid w-full grid-cols-[0.75rem_1fr] gap-x-2.5 gap-y-1 rounded-lg px-2 py-3 text-left transition-colors hover:bg-neutral-950/[0.03] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 aria-pressed:bg-neutral-950/[0.04]">
-            <span class="mt-1 block size-3 rounded-sm border border-neutral-300 group-aria-pressed:ring-2 group-aria-pressed:ring-neutral-900 group-aria-pressed:ring-offset-2" style="background:rgba({DREAM_THEME_CHART_RGB},{opacity:.3f})"></span>
+            class="dream-theme-option grid w-full grid-cols-[0.75rem_1fr] gap-x-2.5 gap-y-1 rounded-lg px-2 py-3 text-left transition-colors hover:bg-neutral-950/[0.03] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 aria-pressed:bg-neutral-950/[0.04]">
+            <span class="mt-1 block size-3 rounded-sm" style="background:rgba({DREAM_THEME_CHART_RGB},{opacity:.3f})"></span>
             <span class="text-sm font-medium">{label}</span>
             <span class="col-start-2 text-xs leading-relaxed text-neutral-500">{description}</span>
           </button>
@@ -539,6 +540,7 @@ function renderDreamThemeSelection() {
     target.setAttribute("aria-pressed", String(selected));
     target.style.opacity = activeDreamTheme && !selected ? "0.5" : "1";
     if (target.classList.contains("dream-theme-slice")) {
+      target.setAttribute("fill-opacity", selected ? "1" : target.dataset.chartOpacity);
       target.setAttribute("stroke-width", selected ? "4" : "2");
     }
   }

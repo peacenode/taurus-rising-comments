@@ -271,7 +271,10 @@ class DreamThemeRenderTests(unittest.TestCase):
             markup,
         )
         self.assertNotIn('<path d="M 160 160', markup)
-        self.assertIn('data-dream-theme="home-belonging" role="button"', markup)
+        self.assertIn(
+            'data-dream-theme="home-belonging" data-chart-opacity="1.000" role="button"',
+            markup,
+        )
         self.assertIn("Home / Belonging: 3 assignments, 100.0%", markup)
         self.assertIn("100.0%</text>", markup)
         self.assertEqual(markup.count('class="dream-theme-option'), 7)
@@ -297,6 +300,8 @@ class DreamThemeRenderTests(unittest.TestCase):
         self.assertEqual(markup.count('class="dream-theme-percent"'), 7)
         self.assertEqual(markup.count('fill="#000000" fill-opacity="0.5"'), 4)
         self.assertEqual(markup.count('fill="#ffffff" fill-opacity="0.5"'), 3)
+        self.assertNotIn("group-aria-pressed:ring", markup)
+        self.assertNotIn('rounded-sm border', markup)
         self.assertNotIn("dream-theme-number", markup)
         positions = [markup.index(theme["label"]) for theme in TAXONOMY["themes"]]
         self.assertEqual(positions, sorted(positions))
@@ -488,6 +493,10 @@ class ProductionDreamThemeTests(unittest.TestCase):
             'target.style.opacity = activeDreamTheme && !selected ? "0.5" : "1"',
             self.html,
         )
+        self.assertIn(
+            'target.setAttribute("fill-opacity", selected ? "1" : target.dataset.chartOpacity)',
+            self.html,
+        )
         self.assertNotIn('? "0.28" : "1"', self.html)
 
     def test_existing_interaction_blocks_and_startup_calls_are_unchanged(self):
@@ -495,7 +504,7 @@ class ProductionDreamThemeTests(unittest.TestCase):
         expected = [
             ("const filters =", "const chipDef =", "17d5003599651956e524a38b9ef59a77cba44bb8579c6b2662c727db40a938bc"),
             ("const chipDef =", "const q =", "fece93c6a4b989b4785193822473671688084b2915632eb41efb89440ccbd5ef"),
-            ("const q =", "const updatedEl =", "3fa43db11685f13306f5def121cec358956de6da3fa1f739ecf2a59a4ff1ae13"),
+            ("const q =", "const updatedEl =", "e3c4abcf871fde0f09d6f2d13ded27cae069c938ee6beda5e25528260cb2028b"),
         ]
         for start, end, digest in expected:
             block = source[source.index(start):source.index(end)]
