@@ -24,8 +24,10 @@ REJECTED (with one-line rationale)
 
 - Remove or replace the existing placement graphs: rejected; this phase keeps
   their markup, styling, placement filtering, search, and response flow.
-- Treat pie slices as percentages of respondents: rejected because themes
-  overlap. Slices instead show percentages of all reviewed theme assignments.
+- Treat pie slices as percentages of respondents: rejected in the original v1
+  multi-label implementation. The later v2 reclassification supersedes this:
+  slices now show the share of themed responses by one primary outcome, while
+  co-dominant themes remain visible on response rows.
 - Add pie/legend filtering: added in a later explicit follow-up as one shared,
   single-select Dream-theme filter.
 - Whole Sign/Placidus separation, Career analysis, new navigation, respondent
