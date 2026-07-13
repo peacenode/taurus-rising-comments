@@ -310,7 +310,7 @@ function renderFilterChips() {
       return filterChipHTML(key, `${FILTER_CHIP_PREFIXES[key]}: ${displayValue}`);
     });
   if (activeDreamTheme) {
-    chips.push(filterChipHTML("dream_theme", `Theme: ${DREAM_THEME_LABELS[activeDreamTheme]}`));
+    chips.push(filterChipHTML("dream_theme", DREAM_THEME_LABELS[activeDreamTheme]));
   }
   activeFiltersEl.innerHTML = chips.join("");
 }

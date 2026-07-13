@@ -995,6 +995,11 @@ class ProductionDreamThemeTests(unittest.TestCase):
         self.assertIn('aria-label="Remove ${esc(label)} filter"', self.html)
         self.assertIn('class="size-3 text-neutral-400" aria-hidden="true"', self.html)
         self.assertIn('key === "dream_theme"', self.html)
+        self.assertIn(
+            'filterChipHTML("dream_theme", DREAM_THEME_LABELS[activeDreamTheme])',
+            self.html,
+        )
+        self.assertNotIn('`Theme: ${DREAM_THEME_LABELS[activeDreamTheme]}`', self.html)
         self.assertIn('filters[key] = null', self.html)
         self.assertIn("renderFilterChips();", self.html)
         self.assertNotIn('q.value = ""', self.html)
@@ -1008,7 +1013,7 @@ class ProductionDreamThemeTests(unittest.TestCase):
         expected = [
             ("const filters =", "const chipDef =", "17d5003599651956e524a38b9ef59a77cba44bb8579c6b2662c727db40a938bc"),
             ("const chipDef =", "const q =", "8178b8c89fbbf120276c4b6a22bb04a3eda8c61325f979e3d33ee7b781641502"),
-            ("const q =", "const updatedEl =", "78bffe95d8ef1e1ea08a91d36e9de3fb9b7e484f6a804b965c6e76bb68d96684"),
+            ("const q =", "const updatedEl =", "de473f78141136160e0f503a7ad96f0aca241b91e20b0e3566f4ac3530f6cdf6"),
         ]
         for start, end, digest in expected:
             block = source[source.index(start):source.index(end)]
