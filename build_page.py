@@ -275,10 +275,9 @@ def render_dream_theme_pie(summary):
             else 4 * radius * math.sin(sweep_radians / 2) / (3 * sweep_radians)
         )
         marker_x, marker_y = point(middle, marker_distance)
-        text_color = "#ffffff" if opacity == 1 else "#000000"
         markers.append(
             f'<text x="{marker_x:.3f}" y="{marker_y + 0.5:.3f}" text-anchor="middle" '
-            f'dominant-baseline="middle" fill="{text_color}" font-size="10" font-weight="600" '
+            'dominant-baseline="middle" fill="#000000" fill-opacity="0.5" font-size="10" font-weight="600" '
             f'class="dream-theme-percent" aria-hidden="true" pointer-events="none">{percent_text}</text>'
         )
         angle = end
@@ -309,7 +308,7 @@ def render_dream_theme_pie(summary):
       <div class="mx-auto w-full max-w-xs">
         <svg viewBox="0 0 320 320" role="group" aria-labelledby="dream-pie-title dream-pie-desc" class="block h-auto w-full overflow-visible">
           <title id="dream-pie-title">Dream theme assignment distribution</title>
-          <desc id="dream-pie-desc">A seven-part interactive pie chart ordered from the smallest, lightest theme to the largest, darkest theme, with evenly stepped color intensity. Each percentage label sits at the visual center of its slice. Select a slice to filter the responses and its matching theme in the list.</desc>
+          <desc id="dream-pie-desc">A seven-part interactive pie chart ordered from the smallest, lightest theme to the largest, darkest theme, with evenly stepped color intensity. Each semi-transparent percentage label sits at the visual center of its slice. Select a slice to filter the responses and its matching theme in the list.</desc>
           {''.join(paths)}
           {''.join(markers)}
         </svg>
