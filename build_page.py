@@ -268,14 +268,18 @@ def render_dream_theme_pie(summary):
         paths.append(path_markup)
 
         middle = angle + sweep / 2
-        marker_distance = 0 if len(nonzero) == 1 else radius
+        sweep_radians = math.radians(sweep)
+        marker_distance = (
+            0
+            if len(nonzero) == 1
+            else 4 * radius * math.sin(sweep_radians / 2) / (3 * sweep_radians)
+        )
         marker_x, marker_y = point(middle, marker_distance)
+        text_color = "#ffffff" if opacity == 1 else "#000000"
         markers.append(
-            f'<g aria-hidden="true" pointer-events="none"><rect x="{marker_x - 22:.3f}" y="{marker_y - 11:.3f}" '
-            'width="44" height="22" rx="11" fill="#ffffff" />'
             f'<text x="{marker_x:.3f}" y="{marker_y + 0.5:.3f}" text-anchor="middle" '
-            'dominant-baseline="middle" fill="#171717" font-size="10" font-weight="600" class="dream-theme-percent">'
-            f'{percent_text}</text></g>'
+            f'dominant-baseline="middle" fill="{text_color}" font-size="10" font-weight="600" '
+            f'class="dream-theme-percent" aria-hidden="true" pointer-events="none">{percent_text}</text>'
         )
         angle = end
 
@@ -305,7 +309,7 @@ def render_dream_theme_pie(summary):
       <div class="mx-auto w-full max-w-xs">
         <svg viewBox="0 0 320 320" role="group" aria-labelledby="dream-pie-title dream-pie-desc" class="block h-auto w-full overflow-visible">
           <title id="dream-pie-title">Dream theme assignment distribution</title>
-          <desc id="dream-pie-desc">A seven-part interactive pie chart ordered from the smallest, lightest theme to the largest, darkest theme, with evenly stepped color intensity. Each percentage label is centered on its slice's outer arc. Select a slice to filter the responses and its matching theme in the list.</desc>
+          <desc id="dream-pie-desc">A seven-part interactive pie chart ordered from the smallest, lightest theme to the largest, darkest theme, with evenly stepped color intensity. Each percentage label sits at the visual center of its slice. Select a slice to filter the responses and its matching theme in the list.</desc>
           {''.join(paths)}
           {''.join(markers)}
         </svg>

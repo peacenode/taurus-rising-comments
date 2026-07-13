@@ -276,13 +276,14 @@ class DreamThemeRenderTests(unittest.TestCase):
         self.assertIn("100.0%</text>", markup)
         self.assertEqual(markup.count('class="dream-theme-option'), 7)
 
-    def test_percentage_labels_are_centered_on_each_slice_outer_arc(self):
+    def test_percentage_labels_are_centered_in_each_slice_without_backgrounds(self):
         markup = build_page.render_dream_theme_pie(render_summary([1, 1, 0, 0, 0, 0, 0]))
         self.assertNotIn("<line ", markup)
+        self.assertNotIn("<rect ", markup)
         self.assertEqual(markup.count('class="dream-theme-percent"'), 2)
         self.assertNotIn('stroke="#a3a3a3"', markup)
-        self.assertIn('<rect x="266.000" y="149.000"', markup)
-        self.assertIn('<rect x="10.000" y="149.000"', markup)
+        self.assertIn('<text x="214.325" y="160.500"', markup)
+        self.assertIn('<text x="105.675" y="160.500"', markup)
         self.assertEqual(markup.count("50.0%</text>"), 2)
         self.assertIn('aria-label="Select Home / Belonging"', markup)
         self.assertIn('aria-label="Select Cultivation"', markup)
