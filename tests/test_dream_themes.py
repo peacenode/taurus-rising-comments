@@ -433,7 +433,7 @@ class ProductionDreamThemeTests(unittest.TestCase):
         self.assertEqual(section.count("<li class="), 7)
         self.assertEqual(section.count('class="dream-theme-option'), 7)
         self.assertEqual(section.count('class="dream-theme-slice'), 7)
-        self.assertIn('>Dreams</h2>', section)
+        self.assertIn('>Themes</h2>', section)
         self.assertIn("Select a theme or pie slice to explore the responses it appears in", section)
         expected_ids = [
             "stewardship",

@@ -306,7 +306,7 @@ def render_dream_theme_pie(summary):
     return f'''
   <section id="dream-themes" class="mt-16 border-t border-neutral-200 pt-12">
     <div class="mx-auto max-w-prose text-center">
-      <h2 class="font-serif text-2xl font-normal tracking-tight">Dreams</h2>
+      <h2 class="font-serif text-2xl font-normal tracking-tight">Themes</h2>
       <p class="mt-2 text-sm text-neutral-500 text-balance">Select a theme or pie slice to explore the responses it appears in. A response can belong to more than one theme.</p>
     </div>
     <div class="mt-8 grid items-start gap-8 md:grid-cols-[minmax(0,20rem)_1fr] md:gap-10">
