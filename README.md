@@ -8,15 +8,17 @@ they've attracted.
 
 - Post: https://www.tiktok.com/@thebaileygrind_/video/7660139501171395853
   (short link: https://www.tiktok.com/t/ZTSCSNEJn/)
-- Collected: 2026-07-08/10 via stablesocial.dev `/api/tiktok/post-comments`
+- Collected: 2026-07-08/12 via stablesocial.dev `/api/tiktok/post-comments`
   (Data365 provider), paid through agentcash ($0.06/page). Incremental pulls
   on Jul 8 built up 91 comments; a 3-page re-pull on Jul 9 (~03:20 UTC) added
   52; a newest-first top-up (~04:50 UTC) added 9 more; a full 5-page re-pull
   on Jul 9 (~23:24 UTC) added 92 more; a newest-first top-up on Jul 10
-  (~12:43 UTC) added 44 more
-- Coverage: all 288 top-level comments as of ~12:43 UTC Jul 10, deduped on
-  username + timestamp. TikTok's displayed comment count also includes
-  reply threads, which the provider cannot return (see caveats)
+  (~12:43 UTC) added 44 more; a complete eight-page cursor walk on Jul 12
+  added 67 recent and previously missed comments
+- Coverage: all 355 top-level comments returned by the complete cursor walk
+  as of 20:28 UTC Jul 12, deduped on username + timestamp + verbatim text.
+  TikTok's displayed comment count also includes reply threads, which the
+  provider cannot reliably return (see caveats)
 
 ## Files
 
@@ -24,8 +26,13 @@ they've attracted.
   `text`, and extracted fields (`venus_sign/house`, `nn_sign/house`,
   `saturn_sign/house`, `dreams`, `lessons_attracted`, `life_events`, `notes`)
 - `data/extracted.csv` — same data flattened for spreadsheets
+- `data/new_batch6.json` — the 67 reviewed rows added by the Jul 12 refresh
+- `data/new_batch6_page*_raw.json` — all eight provider pages from the Jul 12
+  cursor walk, retained before normalization
+- `data/new_batch6_reply_test_raw.json` — the empty reply-endpoint result for
+  a parent comment reporting 10 replies
 - `avatars/` — commenter profile pictures scraped from public TikTok profile
-  pages by `fetch_avatars.py` (271/284 users; 13 profiles had no reachable
+  pages by `fetch_avatars.py` (336/350 users; 14 profiles had no reachable
   avatar), plus Bailey's own and the Communion logo. Inlined into
   `index.html` as data URIs at build time.
 
@@ -35,9 +42,11 @@ own words; `text` is always verbatim for re-checking.
 
 ## Caveats
 
-- **Reply threads missing.** Some comments have replies. The provider
-  returns comment IDs as float-rounded numbers (trailing zeros), so the
-  comment-replies endpoint can't match them — a test lookup returned empty.
+- **Reply threads missing.** The complete Jul 12 pull reports 64 parent
+  comments with 105 replies. The provider returns every comment ID as a
+  float-rounded number (trailing zeros), so the comment-replies endpoint
+  cannot match them; a fresh test against a parent reporting 10 replies
+  returned zero items.
   Notably `thethirdperspectiv` and `ila9030` both have reply threads where
   the story continues.
 - **House systems are mixed.** Most commenters appear to use whole-sign; two
@@ -53,22 +62,22 @@ own words; `text` is always verbatim for re-checking.
   answer for a boyfriend (`ila9030`), one interpreted "dreams" as literal sleep
   dreams (`destenylazo6`), one gave no placements (`pidepeterpiper`),
   one is technically an Aries rising at 28° (`kellynn.danae`).
-- Four commenters have two rows each: `shannaw987` (full comment plus a
+- Four commenters have multiple rows: `shannaw987` (full comment plus a
   fragment follow-up, "In Gemini 1st house", 6 minutes later), `susspishiz`
   ("Me 🙋‍♀️" then her Venus placement 4 minutes later), `beloolaaa`
   (a curiosity note, then a fuller placement/dreams comment), and
-  `saturdayaddamss` (two near-duplicate Venus placement comments). 288
-  comments, 284 unique users.
+  `saturdayaddamss` (three placement comments). 355 comments, 350 unique
+  users.
 
-## Quick stats (n=288, nulls excluded)
+## Quick stats (n=355, nulls excluded)
 
-- Venus sign: Aries 34, Scorpio 26, Sagittarius 24, Aquarius 24, Capricorn 23
-- Venus house: 12th 35, 8th 29, 10th 27, 7th 25, 6th 24
-- North Node sign: Capricorn 29, Libra 26, Leo 25, Aries 24, Gemini 23
-- North Node house: 6th 29, 2nd 25, 9th 24, 7th 24, 12th 24
-- Saturn sign: Aquarius 39, Pisces 36, Aries 32, Taurus 29, Capricorn 24
-- Saturn house: 12th 45, 11th 37, 10th 36, 1st 22, 8th 22
-- 194/288 shared dreams, 158/288 named lessons/attraction patterns, 137/288
+- Venus sign: Aries 45, Scorpio 33, Taurus 33, Sagittarius 32, Pisces 28
+- Venus house: 12th 49, 7th 34, 8th 34, 10th 30, 1st 29
+- North Node sign: Leo 38, Capricorn 36, Aries 32, Gemini 28, Taurus 28
+- North Node house: 12th 33, 4th 31, 6th 31, 7th 31, 2nd 29
+- Saturn sign: Aquarius 46, Pisces 44, Taurus 43, Aries 39, Capricorn 28
+- Saturn house: 12th 55, 10th 44, 11th 43, 1st 33, 8th 28
+- 238/355 shared dreams, 189/355 named lessons/attraction patterns, 161/355
   described hardships/life events
 
 ## Page
