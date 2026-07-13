@@ -293,7 +293,7 @@ def render_dream_theme_pie(summary):
         percent = theme["percentage"]
         percent_text = "0%" if percent == 0 else f"{percent:.1f}%"
         legend.append(f'''
-        <li class="border-t border-neutral-200 py-1 first:border-t-0 first:pt-0">
+        <li class="py-1">
           <button type="button" data-dream-theme="{theme_id}" aria-pressed="false" aria-controls="list"
             class="dream-theme-option w-full rounded-lg px-2 py-3 text-left transition-colors hover:bg-neutral-950/[0.03] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 aria-pressed:bg-neutral-950/[0.04]">
             <span class="block text-sm font-medium">{label} <span class="text-neutral-950/50">{percent_text}</span></span>
@@ -415,6 +415,7 @@ __DREAM_THEME_PIE__
 
 <script>
 const DATA = __DATA__;
+const DREAM_THEME_LABELS = __DREAM_THEME_LABELS__;
 
 const ord = h => h + (h === 1 ? "st" : h === 2 ? "nd" : h === 3 ? "rd" : "th");
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -503,9 +504,14 @@ const chipDef = [
 ];
 
 function entryHTML(r) {
+  const themeNames = (r.dream_theme_ids || [])
+    .map(themeId => DREAM_THEME_LABELS[themeId])
+    .filter(Boolean)
+    .join(", ");
   const fields = [
     ...chipDef.map(([label, , sk, hk]) => [label, fmtPlacement(r[sk], r[hk])]),
     ["Dreams", r.dreams && esc(r.dreams)],
+    ["Themes", themeNames && esc(themeNames)],
     ["Lessons", r.lessons_attracted && esc(r.lessons_attracted)],
   ].filter(([, v]) => v)
    .map(([k, v]) => `
@@ -615,6 +621,9 @@ def build_page(project_root=None):
     data = json.loads((project_root / "data/extracted.json").read_text())
     dream_theme_summary = load_dream_theme_summary(data, project_root=project_root)
     dream_theme_pie = render_dream_theme_pie(dream_theme_summary)
+    dream_theme_labels = {
+        theme["id"]: theme["label"] for theme in dream_theme_summary["themes"]
+    }
 
     # keep the CSV in sync
     fields = ["username","display_name","created_time","digg_count","reply_count",
@@ -660,6 +669,7 @@ def build_page(project_root=None):
 
     output = (TEMPLATE
               .replace("__DATA__", json.dumps(data, ensure_ascii=False))
+              .replace("__DREAM_THEME_LABELS__", json.dumps(dream_theme_labels, ensure_ascii=False))
               .replace("__BAILEY_AVATAR__", bailey_img)
               .replace("__COMMUNION_LOGO_SM__", logo_sm)
               .replace("__COMMUNION_LOGO__", logo_img)

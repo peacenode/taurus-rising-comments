@@ -295,6 +295,7 @@ class DreamThemeRenderTests(unittest.TestCase):
     def test_legend_has_seven_ordered_rows_and_accessible_ids(self):
         markup = build_page.render_dream_theme_pie(render_summary([1, 1, 1, 1, 1, 1, 1]))
         self.assertEqual(markup.count("<li class="), 7)
+        self.assertEqual(markup.count('<li class="py-1">'), 7)
         self.assertEqual(markup.count('class="dream-theme-option'), 7)
         self.assertEqual(markup.count('class="dream-theme-slice'), 7)
         self.assertEqual(markup.count("focus:outline-none focus-visible:outline"), 7)
@@ -473,8 +474,17 @@ class ProductionDreamThemeTests(unittest.TestCase):
             self.assertNotIn(theme["classification_guidance"], self.html)
 
     def test_embedded_public_theme_ids_match_reviewed_assignments(self):
-        payload = self.html.split("const DATA = ", 1)[1].split(";\n\nconst ord", 1)[0]
+        payload = self.html.split("const DATA = ", 1)[1].split(
+            ";\nconst DREAM_THEME_LABELS", 1
+        )[0]
         embedded_rows = json.loads(payload)
+        labels_payload = self.html.split("const DREAM_THEME_LABELS = ", 1)[1].split(
+            ";\n\nconst ord", 1
+        )[0]
+        self.assertEqual(
+            json.loads(labels_payload),
+            {theme["id"]: theme["label"] for theme in TAXONOMY["themes"]},
+        )
         assignment_by_key = {
             (item["username"], item["created_time"]): item["theme_ids"]
             for item in self.assignments_doc["assignments"]
@@ -498,6 +508,11 @@ class ProductionDreamThemeTests(unittest.TestCase):
         self.assertIn("r.dream_theme_ids.includes(activeDreamTheme)", self.html)
         self.assertIn("activeDreamTheme = null", self.html)
         self.assertIn(
+            "activeDreamTheme = activeDreamTheme === themeId ? null : themeId",
+            self.html,
+        )
+        self.assertIn('["Themes", themeNames && esc(themeNames)]', self.html)
+        self.assertIn(
             'target.style.opacity = activeDreamTheme && !selected ? "0.5" : "1"',
             self.html,
         )
@@ -515,7 +530,7 @@ class ProductionDreamThemeTests(unittest.TestCase):
         source = (ROOT / "build_page.py").read_text()
         expected = [
             ("const filters =", "const chipDef =", "17d5003599651956e524a38b9ef59a77cba44bb8579c6b2662c727db40a938bc"),
-            ("const chipDef =", "const q =", "fece93c6a4b989b4785193822473671688084b2915632eb41efb89440ccbd5ef"),
+            ("const chipDef =", "const q =", "8178b8c89fbbf120276c4b6a22bb04a3eda8c61325f979e3d33ee7b781641502"),
             ("const q =", "const updatedEl =", "34d486f46eb4d9318aeb6074218e657b7f5ae2d3eda72fdcf72b46626b02d01b"),
         ]
         for start, end, digest in expected:
