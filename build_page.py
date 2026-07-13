@@ -224,10 +224,17 @@ def render_dream_theme_pie(summary):
         percent = theme["percentage"]
         percent_text = "0%" if percent == 0 else f"{percent:.1f}%"
         title = html_lib.escape(f"{theme['label']}: {count} assignments, {percent_text}")
+        theme_id = html_lib.escape(theme["id"])
+        interaction_attrs = (
+            f'class="dream-theme-slice cursor-pointer transition-opacity duration-150" '
+            f'data-dream-theme="{theme_id}" role="button" tabindex="0" '
+            f'aria-label="Select {label}" aria-pressed="false" aria-controls="list"'
+        )
         if len(nonzero) == 1:
             path_markup = (
                 f'<circle cx="{center}" cy="{center}" r="{radius}" fill="{theme["color"]}" '
-                f'stroke="#ffffff" stroke-width="2"><title>{title}</title></circle>'
+                f'stroke="#ffffff" stroke-width="2" {interaction_attrs}>'
+                f'<title>{title}</title></circle>'
             )
         else:
             x1, y1 = point(angle, radius)
@@ -236,7 +243,7 @@ def render_dream_theme_pie(summary):
             path_markup = (
                 f'<path d="M {center} {center} L {x1:.3f} {y1:.3f} '
                 f'A {radius} {radius} 0 {large_arc} 1 {x2:.3f} {y2:.3f} Z" '
-                f'fill="{theme["color"]}" stroke="#ffffff" stroke-width="2">'
+                f'fill="{theme["color"]}" stroke="#ffffff" stroke-width="2" {interaction_attrs}>'
                 f'<title>{title}</title></path>'
             )
         paths.append(path_markup)
@@ -249,10 +256,10 @@ def render_dream_theme_pie(summary):
             line_x2, line_y2 = point(middle, radius + 10)
             markers.append(
                 f'<line x1="{line_x1:.3f}" y1="{line_y1:.3f}" x2="{line_x2:.3f}" y2="{line_y2:.3f}" '
-                'stroke="#737373" stroke-width="1" />'
+                'stroke="#737373" stroke-width="1" pointer-events="none" />'
             )
         markers.append(
-            f'<g aria-label="{label}"><circle cx="{marker_x:.3f}" cy="{marker_y:.3f}" r="11" '
+            f'<g aria-hidden="true" pointer-events="none"><circle cx="{marker_x:.3f}" cy="{marker_y:.3f}" r="11" '
             'fill="#ffffff" stroke="#a3a3a3" stroke-width="1" />'
             f'<text x="{marker_x:.3f}" y="{marker_y + 0.5:.3f}" text-anchor="middle" '
             'dominant-baseline="middle" fill="#171717" font-size="11" font-weight="600">'
@@ -264,33 +271,31 @@ def render_dream_theme_pie(summary):
     for ordinal, theme in enumerate(summary["themes"], 1):
         label = html_lib.escape(theme["label"])
         description = html_lib.escape(theme["description"])
-        percent_text = "0%" if theme["percentage"] == 0 else f'{theme["percentage"]:.1f}%'
+        theme_id = html_lib.escape(theme["id"])
         legend.append(f'''
-        <li class="grid grid-cols-[1.5rem_0.75rem_1fr_auto] gap-x-2.5 gap-y-1 border-t border-neutral-200 py-3 first:border-t-0 first:pt-0">
-          <span class="flex size-6 items-center justify-center rounded-full border border-neutral-300 bg-white text-[11px] font-semibold">{ordinal}</span>
-          <span class="mt-1 block size-3 rounded-sm border border-neutral-300" style="background:{theme['color']}"></span>
-          <span class="text-sm font-medium">{label}</span>
-          <span class="text-xs tabular-nums text-neutral-500">{theme['count']} · {percent_text}</span>
-          <p class="col-start-3 col-span-2 text-xs leading-relaxed text-neutral-500">{description}</p>
+        <li class="border-t border-neutral-200 py-1 first:border-t-0 first:pt-0">
+          <button type="button" data-dream-theme="{theme_id}" aria-pressed="false" aria-controls="list"
+            class="dream-theme-option group grid w-full grid-cols-[1.5rem_0.75rem_1fr] gap-x-2.5 gap-y-1 rounded-lg px-2 py-3 text-left transition-colors hover:bg-neutral-950/[0.03] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 aria-pressed:bg-neutral-950/[0.04]">
+            <span class="dream-theme-number flex size-6 items-center justify-center rounded-full border border-neutral-300 bg-white text-[11px] font-semibold group-aria-pressed:border-neutral-900 group-aria-pressed:bg-neutral-900 group-aria-pressed:text-white">{ordinal}</span>
+            <span class="mt-1 block size-3 rounded-sm border border-neutral-300" style="background:{theme['color']}"></span>
+            <span class="text-sm font-medium">{label}</span>
+            <span class="col-start-3 text-xs leading-relaxed text-neutral-500">{description}</span>
+          </button>
         </li>''')
 
-    reviewed = summary["reviewed_dream_count"]
-    themed = summary["themed_response_count"]
-    assignments = summary["total_theme_assignments"]
     return f'''
   <section id="dream-themes" class="mt-16 border-t border-neutral-200 pt-12">
     <div class="mx-auto max-w-prose text-center">
-      <h2 class="font-serif text-2xl font-normal tracking-tight">Dream themes</h2>
-      <p class="mt-2 text-xs text-neutral-500 text-balance">{themed} of {reviewed} reviewed Dream responses map to at least one theme · {assignments} theme assignments</p>
-      <p class="mt-2 text-xs text-neutral-400 text-balance">A response can belong to more than one theme. Pie slices show the share of all theme assignments, not the share of people.</p>
+      <h2 class="font-serif text-2xl font-normal tracking-tight">Dreams</h2>
+      <p class="mt-2 text-sm text-neutral-500 text-balance">Select a theme or pie slice to explore the responses it appears in. A response can belong to more than one theme.</p>
     </div>
     <div class="mt-8 grid items-start gap-8 md:grid-cols-[minmax(0,20rem)_1fr] md:gap-10">
       <div class="mx-auto w-full max-w-xs">
-        <svg viewBox="0 0 320 320" role="img" aria-labelledby="dream-pie-title dream-pie-desc" class="block h-auto w-full overflow-visible">
+        <svg viewBox="0 0 320 320" role="group" aria-labelledby="dream-pie-title dream-pie-desc" class="block h-auto w-full overflow-visible">
           <title id="dream-pie-title">Dream theme assignment distribution</title>
-          <desc id="dream-pie-desc">A seven-part pie chart. Numbered slices correspond to the ordered legend.</desc>
+          <desc id="dream-pie-desc">A seven-part interactive pie chart. Select a numbered slice to filter the responses and its matching theme in the list.</desc>
           {''.join(paths)}
-          <circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="#a3a3a3" stroke-width="1" />
+          <circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="#a3a3a3" stroke-width="1" pointer-events="none" />
           {''.join(markers)}
         </svg>
       </div>
@@ -509,13 +514,44 @@ const q = document.getElementById("q");
 const list = document.getElementById("list");
 const clearBtn = document.getElementById("clear");
 const countEl = document.getElementById("count");
+const dreamThemeSection = document.getElementById("dream-themes");
+let activeDreamTheme = null;
+
+function renderDreamThemeSelection() {
+  for (const target of dreamThemeSection.querySelectorAll("[data-dream-theme]")) {
+    const selected = target.dataset.dreamTheme === activeDreamTheme;
+    target.setAttribute("aria-pressed", String(selected));
+    if (target.classList.contains("dream-theme-slice")) {
+      target.style.opacity = activeDreamTheme && !selected ? "0.28" : "1";
+      target.setAttribute("stroke-width", selected ? "4" : "2");
+    }
+  }
+}
+
+function selectDreamTheme(themeId) {
+  activeDreamTheme = activeDreamTheme === themeId ? null : themeId;
+  renderDreamThemeSelection();
+  render();
+}
+
+dreamThemeSection.addEventListener("click", event => {
+  const target = event.target.closest("[data-dream-theme]");
+  if (target) selectDreamTheme(target.dataset.dreamTheme);
+});
+dreamThemeSection.addEventListener("keydown", event => {
+  const target = event.target.closest(".dream-theme-slice[data-dream-theme]");
+  if (!target || (event.key !== "Enter" && event.key !== " ")) return;
+  event.preventDefault();
+  selectDreamTheme(target.dataset.dreamTheme);
+});
 
 function render() {
   const term = q.value.trim().toLowerCase();
   const active = Object.entries(filters).filter(([, v]) => v != null);
-  clearBtn.classList.toggle("hidden", !active.length && !term);
+  clearBtn.classList.toggle("hidden", !active.length && !term && !activeDreamTheme);
   const shown = DATA.filter(r => {
     for (const [k, v] of active) if (r[k] !== v) return false;
+    if (activeDreamTheme && !r.dream_theme_ids.includes(activeDreamTheme)) return false;
     if (term) {
       const hay = [r.username, r.display_name, r.text, r.dreams, r.lessons_attracted, r.life_events, r.notes]
         .filter(Boolean).join(" ").toLowerCase();
@@ -534,7 +570,9 @@ q.addEventListener("input", render);
 clearBtn.addEventListener("click", () => {
   q.value = "";
   for (const k of Object.keys(filters)) filters[k] = null;
+  activeDreamTheme = null;
   renderStats();
+  renderDreamThemeSelection();
   render();
 });
 
@@ -542,6 +580,7 @@ const updatedEl = document.getElementById("updated");
 updatedEl.textContent = rel(updatedEl.dataset.time) + " ago";
 
 renderStats();
+renderDreamThemeSelection();
 render();
 </script>
 </body>
@@ -563,6 +602,14 @@ def build_page(project_root=None):
         writer = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(data)
+
+    assignment_doc = json.loads((project_root / "data/dream_theme_assignments.json").read_text())
+    theme_ids_by_source = {
+        (assignment["username"], assignment["created_time"]): assignment["theme_ids"]
+        for assignment in assignment_doc["assignments"]
+    }
+    for row in data:
+        row["dream_theme_ids"] = theme_ids_by_source.get(source_key(row), [])
 
     # inline avatars (fetched by fetch_avatars.py) as data URIs
     for row in data:

@@ -16,8 +16,9 @@ REJECTED (with one-line rationale)
 ## Dependency notes
 
 - Plan 001 is deliberately additive: backend-authored Dream themes feed one
-  static pie chart while the current placement graphs and their filters remain
-  unchanged.
+  pie chart while the current placement graphs and their filters remain
+  unchanged. A later user-directed follow-up made the theme rows and matching
+  pie slices select the same response filter.
 
 ## Findings considered and rejected
 
@@ -25,8 +26,8 @@ REJECTED (with one-line rationale)
   their markup, styling, placement filtering, search, and response flow.
 - Treat pie slices as percentages of respondents: rejected because themes
   overlap. Slices instead show percentages of all reviewed theme assignments.
-- Add pie/legend filtering: deferred; the requested first phase is a static
-  explanatory chart only.
+- Add pie/legend filtering: added in a later explicit follow-up as one shared,
+  single-select Dream-theme filter.
 - Whole Sign/Placidus separation, Career analysis, new navigation, respondent
   normalization, and the Sagittarius comparison: deferred to future explicit
   plans.

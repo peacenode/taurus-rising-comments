@@ -268,23 +268,25 @@ class DreamThemeRenderTests(unittest.TestCase):
         markup = build_page.render_dream_theme_pie(render_summary([3, 0, 0, 0, 0, 0, 0]))
         self.assertIn('<circle cx="160" cy="160" r="128" fill="#171717"', markup)
         self.assertNotIn('<path d="M 160 160', markup)
-        self.assertIn("3 · 100.0%", markup)
-        self.assertEqual(markup.count("0 · 0%"), 6)
-        self.assertNotIn("0 · 0.0%", markup)
+        self.assertIn('data-dream-theme="home-belonging" role="button"', markup)
+        self.assertIn("Home / Belonging: 3 assignments, 100.0%", markup)
+        self.assertEqual(markup.count('class="dream-theme-option'), 7)
 
     def test_narrow_slice_renders_a_leader_line_and_numbered_markers(self):
         markup = build_page.render_dream_theme_pie(render_summary([99, 1, 0, 0, 0, 0, 0]))
         self.assertEqual(markup.count("<line "), 1)
         self.assertEqual(markup.count('r="11"'), 2)
-        self.assertIn('aria-label="Home / Belonging"', markup)
-        self.assertIn('aria-label="Cultivation"', markup)
+        self.assertIn('aria-label="Select Home / Belonging"', markup)
+        self.assertIn('aria-label="Select Cultivation"', markup)
 
     def test_legend_has_seven_ordered_rows_and_accessible_ids(self):
         markup = build_page.render_dream_theme_pie(render_summary([1, 1, 1, 1, 1, 1, 1]))
         self.assertEqual(markup.count("<li class="), 7)
+        self.assertEqual(markup.count('class="dream-theme-option'), 7)
+        self.assertEqual(markup.count('class="dream-theme-slice'), 7)
         positions = [markup.index(theme["label"]) for theme in TAXONOMY["themes"]]
         self.assertEqual(positions, sorted(positions))
-        self.assertIn('role="img" aria-labelledby="dream-pie-title dream-pie-desc"', markup)
+        self.assertIn('role="group" aria-labelledby="dream-pie-title dream-pie-desc"', markup)
         self.assertEqual(markup.count('id="dream-pie-title"'), 1)
         self.assertEqual(markup.count('id="dream-pie-desc"'), 1)
 
@@ -382,6 +384,10 @@ class ProductionDreamThemeTests(unittest.TestCase):
             '<div class="mt-12 mx-auto max-w-prose flex', 1
         )[0]
         self.assertEqual(section.count("<li class="), 7)
+        self.assertEqual(section.count('class="dream-theme-option'), 7)
+        self.assertEqual(section.count('class="dream-theme-slice'), 7)
+        self.assertIn('>Dreams</h2>', section)
+        self.assertIn("Select a theme or pie slice to explore the responses it appears in", section)
         self.assertIn('id="stats"', self.html)
         for label in ("Venus sign", "Venus house", "North node sign", "North node house", "Saturn sign", "Saturn house"):
             self.assertEqual(self.html.count(f'["{label}"'), 1)
@@ -400,42 +406,43 @@ class ProductionDreamThemeTests(unittest.TestCase):
             self.assertEqual(self.html.count(theme["description"]), 1)
             self.assertNotIn(theme["classification_guidance"], self.html)
 
-    def test_displayed_percentages_and_summary_counts_match_assignments(self):
-        counts = {theme_id: 0 for theme_id in THEME_IDS}
-        themed = 0
-        for assignment in self.assignments_doc["assignments"]:
-            themed += bool(assignment["theme_ids"])
-            for theme_id in assignment["theme_ids"]:
-                counts[theme_id] += 1
-        total = sum(counts.values())
-        for theme_id in THEME_IDS:
-            percentage = counts[theme_id] / total * 100
-            percentage_text = "0%" if percentage == 0 else f"{percentage:.1f}%"
-            self.assertIn(f"{counts[theme_id]} · {percentage_text}", self.html)
-        self.assertIn(
-            f"{themed} of 238 reviewed Dream responses map to at least one theme · "
-            f"{total} theme assignments",
-            self.html,
-        )
+    def test_embedded_public_theme_ids_match_reviewed_assignments(self):
+        payload = self.html.split("const DATA = ", 1)[1].split(";\n\nconst ord", 1)[0]
+        embedded_rows = json.loads(payload)
+        assignment_by_key = {
+            (item["username"], item["created_time"]): item["theme_ids"]
+            for item in self.assignments_doc["assignments"]
+        }
+        self.assertEqual(len(embedded_rows), 355)
+        for row in embedded_rows:
+            self.assertEqual(
+                row["dream_theme_ids"],
+                assignment_by_key.get((row["username"], row["created_time"]), []),
+            )
 
-    def test_chart_does_not_add_filter_behavior(self):
+    def test_chart_and_theme_list_share_one_filter_behavior(self):
         section = self.html.split('<section id="dream-themes"', 1)[1].split(
             '<div class="mt-12 mx-auto max-w-prose flex', 1
         )[0]
-        self.assertNotIn("data-key", section)
-        self.assertNotIn("addEventListener", section)
+        self.assertEqual(section.count('data-dream-theme="'), 14)
+        self.assertEqual(section.count('aria-pressed="false"'), 14)
+        self.assertIn('aria-controls="list"', section)
+        self.assertIn('dreamThemeSection.addEventListener("click"', self.html)
+        self.assertIn('dreamThemeSection.addEventListener("keydown"', self.html)
+        self.assertIn("r.dream_theme_ids.includes(activeDreamTheme)", self.html)
+        self.assertIn("activeDreamTheme = null", self.html)
 
     def test_existing_interaction_blocks_and_startup_calls_are_unchanged(self):
         source = (ROOT / "build_page.py").read_text()
         expected = [
             ("const filters =", "const chipDef =", "17d5003599651956e524a38b9ef59a77cba44bb8579c6b2662c727db40a938bc"),
             ("const chipDef =", "const q =", "fece93c6a4b989b4785193822473671688084b2915632eb41efb89440ccbd5ef"),
-            ("const q =", "const updatedEl =", "eed13ce3c38309d65ef5e69ff333b42e21e1ee9c06f339b2180f78e44c31ab59"),
+            ("const q =", "const updatedEl =", "3e98407bd7fd82aeeb25bd97be45325ee6b2c1890efcfeb5f349acca856971a4"),
         ]
         for start, end, digest in expected:
             block = source[source.index(start):source.index(end)]
             self.assertEqual(hashlib.sha256(block.encode()).hexdigest(), digest)
-        startup = "\nrenderStats();\nrender();\n"
+        startup = "\nrenderStats();\nrenderDreamThemeSelection();\nrender();\n"
         self.assertEqual(source.count(startup), 1)
         self.assertEqual(self.html.count(startup), 1)
 
