@@ -243,7 +243,7 @@ def render_dream_theme_pie(summary):
         title = html_lib.escape(f"{theme['label']}: {count} assignments, {percent_text}")
         theme_id = html_lib.escape(theme["id"])
         interaction_attrs = (
-            f'class="dream-theme-slice cursor-pointer transition-opacity duration-150" '
+            f'class="dream-theme-slice cursor-pointer transition-opacity duration-150 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 [-webkit-tap-highlight-color:transparent]" '
             f'data-dream-theme="{theme_id}" data-chart-opacity="{opacity:.3f}" '
             'role="button" tabindex="0" '
             f'aria-label="Select {label}" aria-pressed="false" aria-controls="list"'
@@ -280,6 +280,7 @@ def render_dream_theme_pie(summary):
         markers.append(
             f'<text x="{marker_x:.3f}" y="{marker_y + 0.5:.3f}" text-anchor="middle" '
             f'dominant-baseline="middle" fill="{text_color}" fill-opacity="0.5" '
+            f'data-dream-theme-percent="{theme_id}" data-chart-text-color="{text_color}" '
             'font-size="10" font-weight="600" '
             f'class="dream-theme-percent" aria-hidden="true" pointer-events="none">{percent_text}</text>'
         )
@@ -545,6 +546,10 @@ function renderDreamThemeSelection() {
       target.setAttribute("fill-opacity", selected ? "1" : target.dataset.chartOpacity);
       target.setAttribute("stroke-width", selected ? "4" : "2");
     }
+  }
+  for (const label of dreamThemeSection.querySelectorAll("[data-dream-theme-percent]")) {
+    const selected = label.dataset.dreamThemePercent === activeDreamTheme;
+    label.setAttribute("fill", selected ? "#ffffff" : label.dataset.chartTextColor);
   }
 }
 

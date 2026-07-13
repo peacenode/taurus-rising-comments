@@ -297,7 +297,10 @@ class DreamThemeRenderTests(unittest.TestCase):
         self.assertEqual(markup.count("<li class="), 7)
         self.assertEqual(markup.count('class="dream-theme-option'), 7)
         self.assertEqual(markup.count('class="dream-theme-slice'), 7)
+        self.assertEqual(markup.count("focus:outline-none focus-visible:outline"), 7)
+        self.assertEqual(markup.count("[-webkit-tap-highlight-color:transparent]"), 7)
         self.assertEqual(markup.count('class="dream-theme-percent"'), 7)
+        self.assertEqual(markup.count('data-dream-theme-percent="'), 7)
         self.assertEqual(markup.count('fill="#000000" fill-opacity="0.5"'), 4)
         self.assertEqual(markup.count('fill="#ffffff" fill-opacity="0.5"'), 3)
         self.assertNotIn("group-aria-pressed:ring", markup)
@@ -502,6 +505,10 @@ class ProductionDreamThemeTests(unittest.TestCase):
             'target.setAttribute("fill-opacity", selected ? "1" : target.dataset.chartOpacity)',
             self.html,
         )
+        self.assertIn(
+            'label.setAttribute("fill", selected ? "#ffffff" : label.dataset.chartTextColor)',
+            self.html,
+        )
         self.assertNotIn('? "0.28" : "1"', self.html)
 
     def test_existing_interaction_blocks_and_startup_calls_are_unchanged(self):
@@ -509,7 +516,7 @@ class ProductionDreamThemeTests(unittest.TestCase):
         expected = [
             ("const filters =", "const chipDef =", "17d5003599651956e524a38b9ef59a77cba44bb8579c6b2662c727db40a938bc"),
             ("const chipDef =", "const q =", "fece93c6a4b989b4785193822473671688084b2915632eb41efb89440ccbd5ef"),
-            ("const q =", "const updatedEl =", "e3c4abcf871fde0f09d6f2d13ded27cae069c938ee6beda5e25528260cb2028b"),
+            ("const q =", "const updatedEl =", "34d486f46eb4d9318aeb6074218e657b7f5ae2d3eda72fdcf72b46626b02d01b"),
         ]
         for start, end, digest in expected:
             block = source[source.index(start):source.index(end)]
