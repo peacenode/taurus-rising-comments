@@ -267,7 +267,7 @@ class DreamThemeRenderTests(unittest.TestCase):
     def test_single_theme_renders_a_full_circle_and_percentage_label(self):
         markup = build_page.render_dream_theme_pie(render_summary([3, 0, 0, 0, 0, 0, 0]))
         self.assertIn(
-            '<circle cx="160" cy="160" r="128" fill="#171717" fill-opacity="1.000"',
+            '<circle cx="160" cy="160" r="128" fill="#e11d48" fill-opacity="1.000"',
             markup,
         )
         self.assertNotIn('<path d="M 160 160', markup)
@@ -315,11 +315,11 @@ class DreamThemeRenderTests(unittest.TestCase):
             self.assertEqual(positions, sorted(positions))
         for theme_id, opacity in expected:
             chart_pattern = (
-                rf'fill="#171717" fill-opacity="{opacity}"[^>]*'
+                rf'fill="#e11d48" fill-opacity="{opacity}"[^>]*'
                 rf'data-dream-theme="{theme_id}"'
             )
             self.assertRegex(chart, chart_pattern)
-            self.assertIn(f'background:rgba(23,23,23,{opacity})', legend)
+            self.assertIn(f'background:rgba(225,29,72,{opacity})', legend)
 
 
 class ProductionDreamThemeTests(unittest.TestCase):

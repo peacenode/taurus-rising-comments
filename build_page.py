@@ -21,6 +21,9 @@ THEME_ID_ORDER = [
     "transmission",
 ]
 
+DREAM_THEME_CHART_COLOR = "#e11d48"
+DREAM_THEME_CHART_RGB = "225,29,72"
+
 
 def source_key(row):
     return row["username"], row["created_time"]
@@ -248,7 +251,7 @@ def render_dream_theme_pie(summary):
         )
         if len(nonzero) == 1:
             path_markup = (
-                f'<circle cx="{center}" cy="{center}" r="{radius}" fill="#171717" '
+                f'<circle cx="{center}" cy="{center}" r="{radius}" fill="{DREAM_THEME_CHART_COLOR}" '
                 f'fill-opacity="{opacity:.3f}" '
                 f'stroke="#ffffff" stroke-width="2" {interaction_attrs}>'
                 f'<title>{title}</title></circle>'
@@ -260,7 +263,7 @@ def render_dream_theme_pie(summary):
             path_markup = (
                 f'<path d="M {center} {center} L {x1:.3f} {y1:.3f} '
                 f'A {radius} {radius} 0 {large_arc} 1 {x2:.3f} {y2:.3f} Z" '
-                f'fill="#171717" fill-opacity="{opacity:.3f}" '
+                f'fill="{DREAM_THEME_CHART_COLOR}" fill-opacity="{opacity:.3f}" '
                 f'stroke="#ffffff" stroke-width="2" {interaction_attrs}>'
                 f'<title>{title}</title></path>'
             )
@@ -295,7 +298,7 @@ def render_dream_theme_pie(summary):
         <li class="border-t border-neutral-200 py-1 first:border-t-0 first:pt-0">
           <button type="button" data-dream-theme="{theme_id}" aria-pressed="false" aria-controls="list"
             class="dream-theme-option group grid w-full grid-cols-[0.75rem_1fr] gap-x-2.5 gap-y-1 rounded-lg px-2 py-3 text-left transition-colors hover:bg-neutral-950/[0.03] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 aria-pressed:bg-neutral-950/[0.04]">
-            <span class="mt-1 block size-3 rounded-sm border border-neutral-300 group-aria-pressed:ring-2 group-aria-pressed:ring-neutral-900 group-aria-pressed:ring-offset-2" style="background:rgba(23,23,23,{opacity:.3f})"></span>
+            <span class="mt-1 block size-3 rounded-sm border border-neutral-300 group-aria-pressed:ring-2 group-aria-pressed:ring-neutral-900 group-aria-pressed:ring-offset-2" style="background:rgba({DREAM_THEME_CHART_RGB},{opacity:.3f})"></span>
             <span class="text-sm font-medium">{label}</span>
             <span class="col-start-2 text-xs leading-relaxed text-neutral-500">{description}</span>
           </button>
