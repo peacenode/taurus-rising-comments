@@ -484,13 +484,18 @@ class ProductionDreamThemeTests(unittest.TestCase):
         self.assertIn('dreamThemeSection.addEventListener("keydown"', self.html)
         self.assertIn("r.dream_theme_ids.includes(activeDreamTheme)", self.html)
         self.assertIn("activeDreamTheme = null", self.html)
+        self.assertIn(
+            'target.style.opacity = activeDreamTheme && !selected ? "0.5" : "1"',
+            self.html,
+        )
+        self.assertNotIn('? "0.28" : "1"', self.html)
 
     def test_existing_interaction_blocks_and_startup_calls_are_unchanged(self):
         source = (ROOT / "build_page.py").read_text()
         expected = [
             ("const filters =", "const chipDef =", "17d5003599651956e524a38b9ef59a77cba44bb8579c6b2662c727db40a938bc"),
             ("const chipDef =", "const q =", "fece93c6a4b989b4785193822473671688084b2915632eb41efb89440ccbd5ef"),
-            ("const q =", "const updatedEl =", "3e98407bd7fd82aeeb25bd97be45325ee6b2c1890efcfeb5f349acca856971a4"),
+            ("const q =", "const updatedEl =", "3fa43db11685f13306f5def121cec358956de6da3fa1f739ecf2a59a4ff1ae13"),
         ]
         for start, end, digest in expected:
             block = source[source.index(start):source.index(end)]

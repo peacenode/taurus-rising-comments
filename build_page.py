@@ -537,8 +537,8 @@ function renderDreamThemeSelection() {
   for (const target of dreamThemeSection.querySelectorAll("[data-dream-theme]")) {
     const selected = target.dataset.dreamTheme === activeDreamTheme;
     target.setAttribute("aria-pressed", String(selected));
+    target.style.opacity = activeDreamTheme && !selected ? "0.5" : "1";
     if (target.classList.contains("dream-theme-slice")) {
-      target.style.opacity = activeDreamTheme && !selected ? "0.28" : "1";
       target.setAttribute("stroke-width", selected ? "4" : "2");
     }
   }
