@@ -950,8 +950,8 @@ def load_dream_theme_summary_v2(
 
 def render_dream_theme_pie(summary):
     center = 160
-    radius = 106
-    label_radius = radius + 20
+    radius = 110
+    label_radius = radius + 16
     angle = -90.0
     paths = []
     markers = []
