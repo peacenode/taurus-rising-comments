@@ -1051,16 +1051,12 @@ def render_dream_theme_pie(summary):
     return f'''
   <section id="dream-themes" class="mt-2">
     <details id="dream-themes-disclosure" class="group">
-      <summary class="mx-auto grid max-w-prose cursor-pointer list-none grid-cols-[minmax(0,1fr)_auto] items-start gap-4 rounded-xl px-3 py-4 transition-colors hover:bg-neutral-950/[0.03] [&::-webkit-details-marker]:hidden">
-        <h2 class="col-start-1 row-start-1 min-w-0 font-serif text-xl font-normal tracking-tight">Themes</h2>
-        <span class="col-start-1 row-start-2 min-w-0 text-sm text-neutral-500 text-balance">Select a theme or pie slice to filter responses by primary theme.</span>
-        <span class="col-start-2 row-span-2 row-start-1 mt-1 flex shrink-0 items-center gap-2">
-          <span id="themes-filter-count" class="hidden text-xs text-neutral-500"></span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-neutral-400 transition-transform group-open:rotate-180" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
-        </span>
+      <summary class="mx-auto flex max-w-prose cursor-pointer list-none items-center justify-center gap-4 px-3 py-4 [&::-webkit-details-marker]:hidden">
+        <h2 class="font-serif text-xl font-normal tracking-tight">Themes</h2>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-neutral-400 transition-transform group-open:rotate-180" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
       </summary>
       <div class="pb-8 pt-4">
-        <p class="mx-auto max-w-prose text-center text-xs text-neutral-500 text-balance">Themes on each response are listed primary first, followed by any co-dominant themes.</p>
+        <p class="mx-auto max-w-prose text-center text-sm text-neutral-500 text-balance">Select a theme or pie slice to filter responses by primary theme. Themes on each response are listed primary first, followed by any co-dominant themes.</p>
         <div class="mt-8 grid items-start gap-8 md:grid-cols-[minmax(0,20rem)_1fr] md:gap-10">
           <div class="mx-auto w-full max-w-xs">
             <svg viewBox="0 0 320 320" role="group" aria-labelledby="dream-pie-title dream-pie-desc" class="block h-auto w-full overflow-visible">
@@ -1134,7 +1130,7 @@ tailwind.config = {
     <p class="mt-2.5 mx-auto text-sm text-neutral-500 max-w-prose text-balance">
       Taurus risings to share their Venus, north node, and Saturn placements,
       along with their dreams and the lessons they&rsquo;ve attracted.
-      Tap any sign or house to filter the messages.
+      Filter responses by selecting placements or themes.
     </p>
     <p class="mt-3">
       <span class="inline-flex items-center gap-1.5 rounded-full bg-neutral-950/[0.03] px-3 py-1 text-xs text-neutral-500">
@@ -1145,16 +1141,13 @@ tailwind.config = {
 
   <section id="placements" class="mt-12">
     <details id="placements-disclosure" class="group">
-      <summary class="mx-auto grid max-w-prose cursor-pointer list-none grid-cols-[minmax(0,1fr)_auto] items-start gap-4 rounded-xl px-3 py-4 transition-colors hover:bg-neutral-950/[0.03] [&::-webkit-details-marker]:hidden">
-        <h2 class="col-start-1 row-start-1 min-w-0 font-serif text-xl font-normal tracking-tight">Placements</h2>
-        <span class="col-start-1 row-start-2 min-w-0 text-sm text-neutral-500 text-balance">Select any sign or house to filter responses.</span>
-        <span class="col-start-2 row-span-2 row-start-1 mt-1 flex shrink-0 items-center gap-2">
-          <span id="placements-filter-count" class="hidden text-xs text-neutral-500"></span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-neutral-400 transition-transform group-open:rotate-180" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
-        </span>
+      <summary class="mx-auto flex max-w-prose cursor-pointer list-none items-center justify-center gap-4 px-3 py-4 [&::-webkit-details-marker]:hidden">
+        <h2 class="font-serif text-xl font-normal tracking-tight">Placements</h2>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-neutral-400 transition-transform group-open:rotate-180" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
       </summary>
       <div class="pb-8 pt-4">
-        <div id="stats" class="grid grid-cols-2 gap-2.5 md:grid-cols-3"></div>
+        <p class="mx-auto max-w-prose text-center text-sm text-neutral-500 text-balance">Select any sign or house to filter responses.</p>
+        <div id="stats" class="mt-8 grid grid-cols-2 gap-2.5 md:grid-cols-3"></div>
         <div class="mt-6 mx-auto max-w-prose text-center">
           <p class="text-xs text-neutral-400 text-balance">
             Every placement is self-reported, and each comment is shown verbatim. Where someone named only
@@ -1306,8 +1299,6 @@ const list = document.getElementById("list");
 const activeFiltersEl = document.getElementById("active-filters");
 const countEl = document.getElementById("count");
 const dreamThemeSection = document.getElementById("dream-themes");
-const placementsFilterCountEl = document.getElementById("placements-filter-count");
-const themesFilterCountEl = document.getElementById("themes-filter-count");
 let activeDreamTheme = null;
 
 const FILTER_CHIP_PREFIXES = {
@@ -1340,12 +1331,6 @@ function renderFilterChips() {
     chips.push(filterChipHTML("dream_theme", DREAM_THEME_LABELS[activeDreamTheme]));
   }
   activeFiltersEl.innerHTML = chips.join("");
-
-  const placementFilterCount = Object.values(filters).filter(value => value != null).length;
-  placementsFilterCountEl.textContent = `${placementFilterCount} selected`;
-  placementsFilterCountEl.classList.toggle("hidden", placementFilterCount === 0);
-  themesFilterCountEl.textContent = activeDreamTheme ? "1 selected" : "";
-  themesFilterCountEl.classList.toggle("hidden", !activeDreamTheme);
 }
 
 function renderDreamThemeSelection() {
