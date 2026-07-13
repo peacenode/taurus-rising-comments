@@ -1022,16 +1022,12 @@ def render_dream_theme_pie(summary):
         middle = angle + sweep / 2
         marker_x, marker_y = point(middle, label_radius)
         horizontal_direction = math.cos(math.radians(middle))
-        text_anchor = (
-            "middle"
-            if abs(horizontal_direction) < 0.15
-            else "start" if horizontal_direction > 0 else "end"
-        )
+        text_anchor = "start" if horizontal_direction >= 0 else "end"
         markers.append(
             f'<text x="{marker_x:.3f}" y="{marker_y + 0.5:.3f}" text-anchor="{text_anchor}" '
             'dominant-baseline="middle" fill="#000000" fill-opacity="0.5" '
             f'data-dream-theme-percent="{theme_id}" data-chart-text-color="#000000" '
-            'font-size="11" font-weight="600" '
+            'font-size="11" font-weight="500" '
             f'class="dream-theme-percent" aria-hidden="true" pointer-events="none">{percent_text}</text>'
         )
         angle = end

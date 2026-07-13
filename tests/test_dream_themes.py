@@ -656,6 +656,7 @@ class DreamThemeRenderTests(unittest.TestCase):
         self.assertEqual(markup.count('class="dream-theme-percent"'), 7)
         self.assertEqual(markup.count('data-dream-theme-percent="'), 7)
         self.assertEqual(markup.count('fill="#000000" fill-opacity="0.5"'), 7)
+        self.assertNotIn('text-anchor="middle"', markup)
         self.assertNotIn("group-aria-pressed:ring", markup)
         self.assertNotIn("size-3", markup)
         self.assertNotIn("dream-theme-number", markup)
