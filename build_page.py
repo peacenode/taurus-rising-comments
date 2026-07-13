@@ -272,7 +272,7 @@ def render_dream_theme_pie(summary):
         marker_x, marker_y = point(middle, marker_distance)
         markers.append(
             f'<g aria-hidden="true" pointer-events="none"><rect x="{marker_x - 22:.3f}" y="{marker_y - 11:.3f}" '
-            'width="44" height="22" rx="11" fill="#ffffff" stroke="#a3a3a3" stroke-width="1" />'
+            'width="44" height="22" rx="11" fill="#ffffff" />'
             f'<text x="{marker_x:.3f}" y="{marker_y + 0.5:.3f}" text-anchor="middle" '
             'dominant-baseline="middle" fill="#171717" font-size="10" font-weight="600" class="dream-theme-percent">'
             f'{percent_text}</text></g>'
@@ -307,7 +307,6 @@ def render_dream_theme_pie(summary):
           <title id="dream-pie-title">Dream theme assignment distribution</title>
           <desc id="dream-pie-desc">A seven-part interactive pie chart ordered from the smallest, lightest theme to the largest, darkest theme, with evenly stepped color intensity. Each percentage label is centered on its slice's outer arc. Select a slice to filter the responses and its matching theme in the list.</desc>
           {''.join(paths)}
-          <circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="#a3a3a3" stroke-width="1" pointer-events="none" />
           {''.join(markers)}
         </svg>
       </div>

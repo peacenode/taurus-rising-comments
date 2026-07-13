@@ -280,6 +280,7 @@ class DreamThemeRenderTests(unittest.TestCase):
         markup = build_page.render_dream_theme_pie(render_summary([1, 1, 0, 0, 0, 0, 0]))
         self.assertNotIn("<line ", markup)
         self.assertEqual(markup.count('class="dream-theme-percent"'), 2)
+        self.assertNotIn('stroke="#a3a3a3"', markup)
         self.assertIn('<rect x="266.000" y="149.000"', markup)
         self.assertIn('<rect x="10.000" y="149.000"', markup)
         self.assertEqual(markup.count("50.0%</text>"), 2)
