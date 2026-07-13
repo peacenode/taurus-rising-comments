@@ -304,7 +304,7 @@ class DreamThemeRenderTests(unittest.TestCase):
         self.assertEqual(markup.count('fill="#000000" fill-opacity="0.5"'), 4)
         self.assertEqual(markup.count('fill="#ffffff" fill-opacity="0.5"'), 3)
         self.assertNotIn("group-aria-pressed:ring", markup)
-        self.assertNotIn('rounded-sm border', markup)
+        self.assertNotIn("size-3", markup)
         self.assertNotIn("dream-theme-number", markup)
         positions = [markup.index(theme["label"]) for theme in TAXONOMY["themes"]]
         self.assertEqual(positions, sorted(positions))
@@ -333,9 +333,9 @@ class DreamThemeRenderTests(unittest.TestCase):
                 rf'data-dream-theme="{theme_id}"'
             )
             self.assertRegex(chart, chart_pattern)
-            self.assertIn(f'background:rgba(225,29,72,{opacity})', legend)
+        self.assertNotIn("background:rgba", legend)
         self.assertIn(
-            '<span class="text-sm font-medium">Freedom '
+            '<span class="block text-sm font-medium">Freedom '
             '<span class="text-neutral-950/50">3.4%</span></span>',
             legend,
         )
