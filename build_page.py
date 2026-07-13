@@ -268,15 +268,8 @@ def render_dream_theme_pie(summary):
         paths.append(path_markup)
 
         middle = angle + sweep / 2
-        marker_distance = 0 if len(nonzero) == 1 else (radius * 0.66 if sweep >= 15 else radius + 24)
+        marker_distance = 0 if len(nonzero) == 1 else radius
         marker_x, marker_y = point(middle, marker_distance)
-        if sweep < 15:
-            line_x1, line_y1 = point(middle, radius + 2)
-            line_x2, line_y2 = point(middle, radius + 10)
-            markers.append(
-                f'<line x1="{line_x1:.3f}" y1="{line_y1:.3f}" x2="{line_x2:.3f}" y2="{line_y2:.3f}" '
-                'stroke="#737373" stroke-width="1" pointer-events="none" />'
-            )
         markers.append(
             f'<g aria-hidden="true" pointer-events="none"><rect x="{marker_x - 22:.3f}" y="{marker_y - 11:.3f}" '
             'width="44" height="22" rx="11" fill="#ffffff" stroke="#a3a3a3" stroke-width="1" />'
@@ -312,7 +305,7 @@ def render_dream_theme_pie(summary):
       <div class="mx-auto w-full max-w-xs">
         <svg viewBox="0 0 320 320" role="group" aria-labelledby="dream-pie-title dream-pie-desc" class="block h-auto w-full overflow-visible">
           <title id="dream-pie-title">Dream theme assignment distribution</title>
-          <desc id="dream-pie-desc">A seven-part interactive pie chart ordered from the smallest, lightest theme to the largest, darkest theme, with evenly stepped color intensity. Each slice shows its percentage of all theme assignments. Select a slice to filter the responses and its matching theme in the list.</desc>
+          <desc id="dream-pie-desc">A seven-part interactive pie chart ordered from the smallest, lightest theme to the largest, darkest theme, with evenly stepped color intensity. Each percentage label is centered on its slice's outer arc. Select a slice to filter the responses and its matching theme in the list.</desc>
           {''.join(paths)}
           <circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="#a3a3a3" stroke-width="1" pointer-events="none" />
           {''.join(markers)}
