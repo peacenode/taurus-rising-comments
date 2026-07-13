@@ -281,7 +281,7 @@ class DreamThemeRenderTests(unittest.TestCase):
         self.assertNotIn("<line ", markup)
         self.assertNotIn("<rect ", markup)
         self.assertEqual(markup.count('class="dream-theme-percent"'), 2)
-        self.assertEqual(markup.count('fill="#000000" fill-opacity="0.5"'), 2)
+        self.assertEqual(markup.count('fill-opacity="0.5"'), 2)
         self.assertNotIn('stroke="#a3a3a3"', markup)
         self.assertIn('<text x="214.325" y="160.500"', markup)
         self.assertIn('<text x="105.675" y="160.500"', markup)
@@ -295,6 +295,8 @@ class DreamThemeRenderTests(unittest.TestCase):
         self.assertEqual(markup.count('class="dream-theme-option'), 7)
         self.assertEqual(markup.count('class="dream-theme-slice'), 7)
         self.assertEqual(markup.count('class="dream-theme-percent"'), 7)
+        self.assertEqual(markup.count('fill="#000000" fill-opacity="0.5"'), 4)
+        self.assertEqual(markup.count('fill="#ffffff" fill-opacity="0.5"'), 3)
         self.assertNotIn("dream-theme-number", markup)
         positions = [markup.index(theme["label"]) for theme in TAXONOMY["themes"]]
         self.assertEqual(positions, sorted(positions))

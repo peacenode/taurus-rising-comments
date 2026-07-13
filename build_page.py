@@ -275,9 +275,11 @@ def render_dream_theme_pie(summary):
             else 4 * radius * math.sin(sweep_radians / 2) / (3 * sweep_radians)
         )
         marker_x, marker_y = point(middle, marker_distance)
+        text_color = "#ffffff" if opacity >= 0.7 else "#000000"
         markers.append(
             f'<text x="{marker_x:.3f}" y="{marker_y + 0.5:.3f}" text-anchor="middle" '
-            'dominant-baseline="middle" fill="#000000" fill-opacity="0.5" font-size="10" font-weight="600" '
+            f'dominant-baseline="middle" fill="{text_color}" fill-opacity="0.5" '
+            'font-size="10" font-weight="600" '
             f'class="dream-theme-percent" aria-hidden="true" pointer-events="none">{percent_text}</text>'
         )
         angle = end
