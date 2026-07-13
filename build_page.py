@@ -951,9 +951,7 @@ def load_dream_theme_summary_v2(
 def render_dream_theme_pie(summary):
     center = 160
     radius = 106
-    leader_start_radius = radius + 3
-    leader_end_radius = radius + 20
-    label_radius = radius + 34
+    label_radius = radius + 20
     angle = -90.0
     paths = []
     markers = []
@@ -1022,16 +1020,15 @@ def render_dream_theme_pie(summary):
         paths.append(path_markup)
 
         middle = angle + sweep / 2
-        line_x1, line_y1 = point(middle, leader_start_radius)
-        line_x2, line_y2 = point(middle, leader_end_radius)
         marker_x, marker_y = point(middle, label_radius)
+        horizontal_direction = math.cos(math.radians(middle))
+        text_anchor = (
+            "middle"
+            if abs(horizontal_direction) < 0.15
+            else "start" if horizontal_direction > 0 else "end"
+        )
         markers.append(
-            f'<line x1="{line_x1:.3f}" y1="{line_y1:.3f}" '
-            f'x2="{line_x2:.3f}" y2="{line_y2:.3f}" '
-            f'stroke="{DREAM_THEME_CHART_COLOR}" stroke-opacity="0.5" stroke-width="1.5" '
-            f'data-dream-theme-line="{theme_id}" data-chart-line-opacity="0.5" '
-            'class="dream-theme-leader" aria-hidden="true" pointer-events="none" />'
-            f'<text x="{marker_x:.3f}" y="{marker_y + 0.5:.3f}" text-anchor="middle" '
+            f'<text x="{marker_x:.3f}" y="{marker_y + 0.5:.3f}" text-anchor="{text_anchor}" '
             'dominant-baseline="middle" fill="#000000" fill-opacity="0.5" '
             f'data-dream-theme-percent="{theme_id}" data-chart-text-color="#000000" '
             'font-size="11" font-weight="600" '
@@ -1065,7 +1062,7 @@ def render_dream_theme_pie(summary):
       <div class="mx-auto w-full max-w-xs">
         <svg viewBox="0 0 320 320" role="group" aria-labelledby="dream-pie-title dream-pie-desc" class="block h-auto w-full overflow-visible">
           <title id="dream-pie-title">Primary Dream theme distribution</title>
-          <desc id="dream-pie-desc">A seven-part interactive pie chart of primary themes, ordered from the smallest, lightest group to the largest, darkest group. Each exact percentage sits outside its slice at the end of a leader line. Select a slice to filter responses whose primary theme matches it; co-dominant themes remain listed on each response.</desc>
+          <desc id="dream-pie-desc">A seven-part interactive pie chart of primary themes, ordered from the smallest, lightest group to the largest, darkest group. Each exact percentage begins just outside its slice. Select a slice to filter responses whose primary theme matches it; co-dominant themes remain listed on each response.</desc>
           {''.join(paths)}
           {''.join(markers)}
         </svg>
@@ -1309,11 +1306,6 @@ function renderDreamThemeSelection() {
     label.setAttribute("fill", selected ? "#e11d48" : label.dataset.chartTextColor);
     label.setAttribute("fill-opacity", selected ? "1" : "0.5");
     label.style.opacity = activeDreamTheme && !selected ? "0.5" : "1";
-  }
-  for (const line of dreamThemeSection.querySelectorAll("[data-dream-theme-line]")) {
-    const selected = line.dataset.dreamThemeLine === activeDreamTheme;
-    line.setAttribute("stroke-opacity", selected ? "1" : line.dataset.chartLineOpacity);
-    line.style.opacity = activeDreamTheme && !selected ? "0.5" : "1";
   }
 }
 

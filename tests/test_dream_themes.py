@@ -621,21 +621,18 @@ class DreamThemeRenderTests(unittest.TestCase):
         )
         self.assertIn("Home / Belonging: 3 primary responses, 100.0%", markup)
         self.assertIn("100.0%</text>", markup)
-        self.assertEqual(markup.count('class="dream-theme-leader"'), 1)
+        self.assertNotIn("<line ", markup)
         self.assertEqual(markup.count('class="dream-theme-option'), 7)
 
-    def test_exact_percentage_labels_sit_outside_with_leader_lines(self):
+    def test_exact_percentage_labels_begin_just_outside_without_leaders(self):
         markup = build_page.render_dream_theme_pie(render_summary([1, 1, 0, 0, 0, 0, 0]))
         self.assertNotIn("<rect ", markup)
-        self.assertEqual(markup.count('class="dream-theme-leader"'), 2)
+        self.assertNotIn("<line ", markup)
         self.assertEqual(markup.count('class="dream-theme-percent"'), 2)
         self.assertEqual(markup.count('fill-opacity="0.5"'), 2)
-        self.assertEqual(markup.count('stroke-opacity="0.5"'), 2)
         self.assertNotIn('stroke="#a3a3a3"', markup)
-        self.assertIn('<line x1="269.000" y1="160.000" x2="286.000" y2="160.000"', markup)
-        self.assertIn('<line x1="51.000" y1="160.000" x2="34.000" y2="160.000"', markup)
-        self.assertIn('<text x="300.000" y="160.500"', markup)
-        self.assertIn('<text x="20.000" y="160.500"', markup)
+        self.assertIn('<text x="286.000" y="160.500" text-anchor="start"', markup)
+        self.assertIn('<text x="34.000" y="160.500" text-anchor="end"', markup)
         self.assertEqual(markup.count("50.0%</text>"), 2)
         self.assertIn(
             'aria-label="Select primary theme Home / Belonging: 50.0%, 1 primary response"',
@@ -654,8 +651,8 @@ class DreamThemeRenderTests(unittest.TestCase):
         self.assertEqual(markup.count('class="dream-theme-slice'), 7)
         self.assertEqual(markup.count("focus:outline-none focus-visible:outline"), 7)
         self.assertEqual(markup.count("[-webkit-tap-highlight-color:transparent]"), 7)
-        self.assertEqual(markup.count('class="dream-theme-leader"'), 7)
-        self.assertEqual(markup.count('data-dream-theme-line="'), 7)
+        self.assertNotIn('class="dream-theme-leader"', markup)
+        self.assertNotIn('data-dream-theme-line="', markup)
         self.assertEqual(markup.count('class="dream-theme-percent"'), 7)
         self.assertEqual(markup.count('data-dream-theme-percent="'), 7)
         self.assertEqual(markup.count('fill="#000000" fill-opacity="0.5"'), 7)
@@ -981,10 +978,7 @@ class ProductionDreamThemeTests(unittest.TestCase):
             'label.setAttribute("fill", selected ? "#e11d48" : label.dataset.chartTextColor)',
             self.html,
         )
-        self.assertIn(
-            'line.setAttribute("stroke-opacity", selected ? "1" : line.dataset.chartLineOpacity)',
-            self.html,
-        )
+        self.assertNotIn("data-dream-theme-line", self.html)
         self.assertNotIn('? "0.28" : "1"', self.html)
 
     def test_existing_interaction_blocks_and_startup_calls_are_unchanged(self):
@@ -992,7 +986,7 @@ class ProductionDreamThemeTests(unittest.TestCase):
         expected = [
             ("const filters =", "const chipDef =", "17d5003599651956e524a38b9ef59a77cba44bb8579c6b2662c727db40a938bc"),
             ("const chipDef =", "const q =", "8178b8c89fbbf120276c4b6a22bb04a3eda8c61325f979e3d33ee7b781641502"),
-            ("const q =", "const updatedEl =", "e2d5233d4e704d7d52e2981ca932f6f863efc711121c68937a1b6399e39d8560"),
+            ("const q =", "const updatedEl =", "a38861dfe65e639b968181dfd9d17864f467eda8181eb93f61b6e5c945756dde"),
         ]
         for start, end, digest in expected:
             block = source[source.index(start):source.index(end)]
