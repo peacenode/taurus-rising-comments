@@ -857,7 +857,7 @@ class ProductionDreamThemeTests(unittest.TestCase):
         self.assertEqual(self.html.count('id="dream-pie-title"'), 1)
         self.assertEqual(self.html.count('id="dream-pie-desc"'), 1)
         section = self.html.split('<section id="dream-themes"', 1)[1].split(
-            '<div class="mt-12 mx-auto max-w-prose flex', 1
+            "</section>", 1
         )[0]
         self.assertEqual(section.count("<li class="), 7)
         self.assertEqual(section.count('class="dream-theme-option'), 7)
@@ -941,7 +941,7 @@ class ProductionDreamThemeTests(unittest.TestCase):
 
     def test_chart_and_theme_list_share_one_filter_behavior(self):
         section = self.html.split('<section id="dream-themes"', 1)[1].split(
-            '<div class="mt-12 mx-auto max-w-prose flex', 1
+            "</section>", 1
         )[0]
         nonzero_theme_count = len(
             {
@@ -982,12 +982,33 @@ class ProductionDreamThemeTests(unittest.TestCase):
         self.assertNotIn("data-dream-theme-line", self.html)
         self.assertNotIn('? "0.28" : "1"', self.html)
 
+    def test_selected_filters_render_as_removable_search_chips(self):
+        search_bar = self.html.split('<div id="search-bar"', 1)[1].split(
+            '<div id="count"', 1
+        )[0]
+        self.assertIn('id="active-filters" aria-label="Active filters"', search_bar)
+        self.assertIn('id="q" type="search" aria-label="Search responses"', search_bar)
+        self.assertLess(search_bar.index('id="active-filters"'), search_bar.index('id="q"'))
+        self.assertNotIn('id="clear"', self.html)
+        self.assertNotIn("clearBtn", self.html)
+        self.assertIn('data-remove-filter="${key}"', self.html)
+        self.assertIn('aria-label="Remove ${esc(label)} filter"', self.html)
+        self.assertIn('class="size-3 text-neutral-400" aria-hidden="true"', self.html)
+        self.assertIn('key === "dream_theme"', self.html)
+        self.assertIn('filters[key] = null', self.html)
+        self.assertIn("renderFilterChips();", self.html)
+        self.assertNotIn('q.value = ""', self.html)
+        self.assertNotIn(
+            "for (const k of Object.keys(filters)) filters[k] = null",
+            self.html,
+        )
+
     def test_existing_interaction_blocks_and_startup_calls_are_unchanged(self):
         source = (ROOT / "build_page.py").read_text()
         expected = [
             ("const filters =", "const chipDef =", "17d5003599651956e524a38b9ef59a77cba44bb8579c6b2662c727db40a938bc"),
             ("const chipDef =", "const q =", "8178b8c89fbbf120276c4b6a22bb04a3eda8c61325f979e3d33ee7b781641502"),
-            ("const q =", "const updatedEl =", "a38861dfe65e639b968181dfd9d17864f467eda8181eb93f61b6e5c945756dde"),
+            ("const q =", "const updatedEl =", "78bffe95d8ef1e1ea08a91d36e9de3fb9b7e484f6a804b965c6e76bb68d96684"),
         ]
         for start, end, digest in expected:
             block = source[source.index(start):source.index(end)]
