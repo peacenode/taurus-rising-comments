@@ -866,8 +866,10 @@ class ProductionDreamThemeTests(unittest.TestCase):
             sum(theme["count"] > 0 for theme in self.summary["themes"]),
         )
         self.assertIn('>Themes</h2>', section)
-        self.assertIn("Select a theme or pie slice to filter responses by primary theme", section)
-        self.assertIn("listed primary first, followed by any co-dominant themes", section)
+        self.assertIn(
+            "Themes on each response are listed primary first, followed by any co-dominant themes.",
+            section,
+        )
         self.assertIn("Primary Dream theme distribution", section)
         expected_ids = [
             theme["id"]
@@ -902,13 +904,24 @@ class ProductionDreamThemeTests(unittest.TestCase):
         for summary in (placements_summary, themes_summary):
             self.assertIn("items-center justify-center gap-4", summary)
             self.assertNotIn("hover:bg", summary)
-        self.assertNotIn("Select any sign or house", placements_summary)
-        self.assertIn("Select any sign or house to filter responses.", placements_expanded)
-        self.assertNotIn("Select a theme or pie slice", themes_summary)
+        self.assertNotIn("Every placement is self-reported", placements_summary)
+        self.assertIn("Every placement is self-reported", placements_expanded)
         self.assertIn(
-            "Select a theme or pie slice to filter responses by primary theme.",
+            "Roughly 16% of the fully-stated placements don&rsquo;t fit whole-sign, so some of those are off by a house.",
+            placements_expanded,
+        )
+        self.assertNotIn("Themes on each response", themes_summary)
+        self.assertIn(
+            "Themes on each response are listed primary first, followed by any co-dominant themes.",
             themes_expanded,
         )
+        self.assertEqual(
+            self.html.count(
+                'class="mx-auto max-w-prose text-center text-sm text-neutral-500 text-balance"'
+            ),
+            2,
+        )
+        self.assertEqual(self.html.count("group-open:pb-2"), 2)
         self.assertIn("Filter responses by selecting placements or themes.", self.html)
         self.assertNotIn("Tap any sign or house to filter the messages.", self.html)
         self.assertNotIn("filter-count", self.html)

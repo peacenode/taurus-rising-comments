@@ -1051,12 +1051,12 @@ def render_dream_theme_pie(summary):
     return f'''
   <section id="dream-themes" class="mt-2">
     <details id="dream-themes-disclosure" class="group">
-      <summary class="mx-auto flex max-w-prose cursor-pointer list-none items-center justify-center gap-4 px-3 py-4 [&::-webkit-details-marker]:hidden">
+      <summary class="mx-auto flex max-w-prose cursor-pointer list-none items-center justify-center gap-4 px-3 py-4 group-open:pb-2 [&::-webkit-details-marker]:hidden">
         <h2 class="font-serif text-xl font-normal tracking-tight">Themes</h2>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-neutral-400 transition-transform group-open:rotate-180" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
       </summary>
-      <div class="pb-8 pt-4">
-        <p class="mx-auto max-w-prose text-center text-sm text-neutral-500 text-balance">Select a theme or pie slice to filter responses by primary theme. Themes on each response are listed primary first, followed by any co-dominant themes.</p>
+      <div class="pb-8">
+        <p class="mx-auto max-w-prose text-center text-sm text-neutral-500 text-balance">Themes on each response are listed primary first, followed by any co-dominant themes.</p>
         <div class="mt-8 grid items-start gap-8 md:grid-cols-[minmax(0,20rem)_1fr] md:gap-10">
           <div class="mx-auto w-full max-w-xs">
             <svg viewBox="0 0 320 320" role="group" aria-labelledby="dream-pie-title dream-pie-desc" class="block h-auto w-full overflow-visible">
@@ -1141,20 +1141,15 @@ tailwind.config = {
 
   <section id="placements" class="mt-12">
     <details id="placements-disclosure" class="group">
-      <summary class="mx-auto flex max-w-prose cursor-pointer list-none items-center justify-center gap-4 px-3 py-4 [&::-webkit-details-marker]:hidden">
+      <summary class="mx-auto flex max-w-prose cursor-pointer list-none items-center justify-center gap-4 px-3 py-4 group-open:pb-2 [&::-webkit-details-marker]:hidden">
         <h2 class="font-serif text-xl font-normal tracking-tight">Placements</h2>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-neutral-400 transition-transform group-open:rotate-180" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
       </summary>
-      <div class="pb-8 pt-4">
-        <p class="mx-auto max-w-prose text-center text-sm text-neutral-500 text-balance">Select any sign or house to filter responses.</p>
+      <div class="pb-8">
+        <p class="mx-auto max-w-prose text-center text-sm text-neutral-500 text-balance">
+          Every placement is self-reported, and each comment is shown verbatim. Where someone named only a sign or only a house, the other was filled in using whole-sign houses &mdash; about 1 in 9 values. Roughly 16% of the fully-stated placements don&rsquo;t fit whole-sign, so some of those are off by a house.
+        </p>
         <div id="stats" class="mt-8 grid grid-cols-2 gap-2.5 md:grid-cols-3"></div>
-        <div class="mt-6 mx-auto max-w-prose text-center">
-          <p class="text-xs text-neutral-400 text-balance">
-            Every placement is self-reported, and each comment is shown verbatim. Where someone named only
-            a sign or only a house, the other was filled in using whole-sign houses &mdash; about 1 in 9 values.
-            Roughly 16% of the fully-stated placements don&rsquo;t fit whole-sign, so some of those are off by a house.
-          </p>
-        </div>
       </div>
     </details>
   </section>
