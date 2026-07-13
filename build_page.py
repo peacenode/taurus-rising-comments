@@ -1049,23 +1049,32 @@ def render_dream_theme_pie(summary):
         </li>''')
 
     return f'''
-  <section id="dream-themes" class="mt-16 pt-12">
-    <div class="mx-auto max-w-prose text-center">
-      <h2 class="font-serif text-2xl font-normal tracking-tight">Themes</h2>
-      <p class="mt-2 text-sm text-neutral-500 text-balance">Primary themes across Dream responses. Select a theme or pie slice to show responses where it is primary. Themes on each response are listed primary first, followed by any co-dominant themes.</p>
-    </div>
-    <div class="mt-8 grid items-start gap-8 md:grid-cols-[minmax(0,20rem)_1fr] md:gap-10">
-      <div class="mx-auto w-full max-w-xs">
-        <svg viewBox="0 0 320 320" role="group" aria-labelledby="dream-pie-title dream-pie-desc" class="block h-auto w-full overflow-visible">
-          <title id="dream-pie-title">Primary Dream theme distribution</title>
-          <desc id="dream-pie-desc">A seven-part interactive pie chart of primary themes, ordered from the smallest, lightest group to the largest, darkest group. Each exact percentage begins just outside its slice. Select a slice to filter responses whose primary theme matches it; co-dominant themes remain listed on each response.</desc>
-          {''.join(paths)}
-          {''.join(markers)}
-        </svg>
+  <section id="dream-themes" class="mt-2">
+    <details id="dream-themes-disclosure" class="group">
+      <summary class="mx-auto grid max-w-prose cursor-pointer list-none grid-cols-[minmax(0,1fr)_auto] items-start gap-4 rounded-xl px-3 py-4 transition-colors hover:bg-neutral-950/[0.03] [&::-webkit-details-marker]:hidden">
+        <h2 class="col-start-1 row-start-1 min-w-0 font-serif text-xl font-normal tracking-tight">Themes</h2>
+        <span class="col-start-1 row-start-2 min-w-0 text-sm text-neutral-500 text-balance">Select a theme or pie slice to filter responses by primary theme.</span>
+        <span class="col-start-2 row-span-2 row-start-1 mt-1 flex shrink-0 items-center gap-2">
+          <span id="themes-filter-count" class="hidden text-xs text-neutral-500"></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-neutral-400 transition-transform group-open:rotate-180" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+        </span>
+      </summary>
+      <div class="pb-8 pt-4">
+        <p class="mx-auto max-w-prose text-center text-xs text-neutral-500 text-balance">Themes on each response are listed primary first, followed by any co-dominant themes.</p>
+        <div class="mt-8 grid items-start gap-8 md:grid-cols-[minmax(0,20rem)_1fr] md:gap-10">
+          <div class="mx-auto w-full max-w-xs">
+            <svg viewBox="0 0 320 320" role="group" aria-labelledby="dream-pie-title dream-pie-desc" class="block h-auto w-full overflow-visible">
+              <title id="dream-pie-title">Primary Dream theme distribution</title>
+              <desc id="dream-pie-desc">A seven-part interactive pie chart of primary themes, ordered from the smallest, lightest group to the largest, darkest group. Each exact percentage begins just outside its slice. Select a slice to filter responses whose primary theme matches it; co-dominant themes remain listed on each response.</desc>
+              {''.join(paths)}
+              {''.join(markers)}
+            </svg>
+          </div>
+          <ol class="min-w-0">{''.join(legend)}
+          </ol>
+        </div>
       </div>
-      <ol class="min-w-0">{''.join(legend)}
-      </ol>
-    </div>
+    </details>
   </section>'''
 
 
@@ -1134,20 +1143,32 @@ tailwind.config = {
     </p>
   </header>
 
-  <div id="stats" class="mt-12 grid grid-cols-2 md:grid-cols-3 gap-2.5"></div>
-
-  <div class="mt-10 mx-auto max-w-prose text-center">
-    <p class="text-xs text-neutral-400 text-balance">
-      Every placement is self-reported, and each comment is shown verbatim. Where someone named only
-      a sign or only a house, the other was filled in using whole-sign houses &mdash; about 1 in 9 values.
-      Roughly 16% of the fully-stated placements don&rsquo;t fit whole-sign, so some of those are off by a house.
-    </p>
-
-  </div>
+  <section id="placements" class="mt-12">
+    <details id="placements-disclosure" class="group">
+      <summary class="mx-auto grid max-w-prose cursor-pointer list-none grid-cols-[minmax(0,1fr)_auto] items-start gap-4 rounded-xl px-3 py-4 transition-colors hover:bg-neutral-950/[0.03] [&::-webkit-details-marker]:hidden">
+        <h2 class="col-start-1 row-start-1 min-w-0 font-serif text-xl font-normal tracking-tight">Placements</h2>
+        <span class="col-start-1 row-start-2 min-w-0 text-sm text-neutral-500 text-balance">Select any sign or house to filter responses.</span>
+        <span class="col-start-2 row-span-2 row-start-1 mt-1 flex shrink-0 items-center gap-2">
+          <span id="placements-filter-count" class="hidden text-xs text-neutral-500"></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-neutral-400 transition-transform group-open:rotate-180" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+        </span>
+      </summary>
+      <div class="pb-8 pt-4">
+        <div id="stats" class="grid grid-cols-2 gap-2.5 md:grid-cols-3"></div>
+        <div class="mt-6 mx-auto max-w-prose text-center">
+          <p class="text-xs text-neutral-400 text-balance">
+            Every placement is self-reported, and each comment is shown verbatim. Where someone named only
+            a sign or only a house, the other was filled in using whole-sign houses &mdash; about 1 in 9 values.
+            Roughly 16% of the fully-stated placements don&rsquo;t fit whole-sign, so some of those are off by a house.
+          </p>
+        </div>
+      </div>
+    </details>
+  </section>
 
 __DREAM_THEME_PIE__
 
-  <div id="search-bar" class="mt-12 mx-auto max-w-prose flex flex-wrap items-center gap-1.5 rounded-xl bg-neutral-950/[0.03] p-1.5 focus-within:ring-1 focus-within:ring-neutral-300">
+  <div id="search-bar" class="mt-8 mx-auto max-w-prose flex flex-wrap items-center gap-1.5 rounded-xl bg-neutral-950/[0.03] p-1.5 focus-within:ring-1 focus-within:ring-neutral-300">
     <div id="active-filters" aria-label="Active filters" class="contents"></div>
     <input id="q" type="search" aria-label="Search responses" placeholder="Search dreams, lessons, comments&hellip;"
       class="flex-1 min-w-40 bg-transparent px-2 py-1 text-sm placeholder:text-neutral-400 focus:outline-none">
@@ -1216,7 +1237,7 @@ function renderStats() {
     const isHouse = key.endsWith("house");
     return `
     <div class="rounded-2xl bg-neutral-950/[0.03] p-3">
-      <h2 class="text-xs font-medium ${a.title}">${title}</h2>
+      <h3 class="text-xs font-medium ${a.title}">${title}</h3>
       <div class="mt-2">
         ${rows.map(([v, n], i) => {
           const active = String(filters[key]) === String(v);
@@ -1285,6 +1306,8 @@ const list = document.getElementById("list");
 const activeFiltersEl = document.getElementById("active-filters");
 const countEl = document.getElementById("count");
 const dreamThemeSection = document.getElementById("dream-themes");
+const placementsFilterCountEl = document.getElementById("placements-filter-count");
+const themesFilterCountEl = document.getElementById("themes-filter-count");
 let activeDreamTheme = null;
 
 const FILTER_CHIP_PREFIXES = {
@@ -1317,6 +1340,12 @@ function renderFilterChips() {
     chips.push(filterChipHTML("dream_theme", DREAM_THEME_LABELS[activeDreamTheme]));
   }
   activeFiltersEl.innerHTML = chips.join("");
+
+  const placementFilterCount = Object.values(filters).filter(value => value != null).length;
+  placementsFilterCountEl.textContent = `${placementFilterCount} selected`;
+  placementsFilterCountEl.classList.toggle("hidden", placementFilterCount === 0);
+  themesFilterCountEl.textContent = activeDreamTheme ? "1 selected" : "";
+  themesFilterCountEl.classList.toggle("hidden", !activeDreamTheme);
 }
 
 function renderDreamThemeSelection() {

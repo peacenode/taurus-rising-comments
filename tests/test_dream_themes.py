@@ -866,7 +866,7 @@ class ProductionDreamThemeTests(unittest.TestCase):
             sum(theme["count"] > 0 for theme in self.summary["themes"]),
         )
         self.assertIn('>Themes</h2>', section)
-        self.assertIn("Primary themes across Dream responses", section)
+        self.assertIn("Select a theme or pie slice to filter responses by primary theme", section)
         self.assertIn("listed primary first, followed by any co-dominant themes", section)
         self.assertIn("Primary Dream theme distribution", section)
         expected_ids = [
@@ -886,6 +886,35 @@ class ProductionDreamThemeTests(unittest.TestCase):
         self.assertIn('id="stats"', self.html)
         for label in ("Venus sign", "Venus house", "North node sign", "North node house", "Saturn sign", "Saturn house"):
             self.assertEqual(self.html.count(f'["{label}"'), 1)
+
+    def test_filter_sections_start_collapsed_and_explain_their_interactions(self):
+        self.assertIn('<section id="placements" class="mt-12">', self.html)
+        self.assertIn('<details id="placements-disclosure" class="group">', self.html)
+        self.assertIn('<details id="dream-themes-disclosure" class="group">', self.html)
+        self.assertIn("Select any sign or house to filter responses.", self.html)
+        self.assertIn(
+            "Select a theme or pie slice to filter responses by primary theme.",
+            self.html,
+        )
+        self.assertIn(
+            'id="placements-filter-count" class="hidden text-xs text-neutral-500"',
+            self.html,
+        )
+        self.assertIn(
+            'id="themes-filter-count" class="hidden text-xs text-neutral-500"',
+            self.html,
+        )
+        self.assertEqual(self.html.count("group-open:rotate-180"), 2)
+        self.assertLess(self.html.index('id="placements"'), self.html.index('id="dream-themes"'))
+        self.assertLess(self.html.index('id="dream-themes"'), self.html.index('id="search-bar"'))
+        self.assertIn(
+            'placementsFilterCountEl.textContent = `${placementFilterCount} selected`',
+            self.html,
+        )
+        self.assertIn(
+            'themesFilterCountEl.textContent = activeDreamTheme ? "1 selected" : ""',
+            self.html,
+        )
 
     def test_private_assignment_and_review_metadata_is_absent(self):
         for private_key in (
@@ -1011,9 +1040,9 @@ class ProductionDreamThemeTests(unittest.TestCase):
     def test_existing_interaction_blocks_and_startup_calls_are_unchanged(self):
         source = (ROOT / "build_page.py").read_text()
         expected = [
-            ("const filters =", "const chipDef =", "17d5003599651956e524a38b9ef59a77cba44bb8579c6b2662c727db40a938bc"),
+            ("const filters =", "const chipDef =", "3d8d1f99e3c2efcd215037ad5696f574708598ff37d2eaf0eb12caf1cb2da467"),
             ("const chipDef =", "const q =", "8178b8c89fbbf120276c4b6a22bb04a3eda8c61325f979e3d33ee7b781641502"),
-            ("const q =", "const updatedEl =", "de473f78141136160e0f503a7ad96f0aca241b91e20b0e3566f4ac3530f6cdf6"),
+            ("const q =", "const updatedEl =", "9d66ab3e90f1923d6435e7a414626f4c86a461053b99fcb95d50090cde01ec0a"),
         ]
         for start, end, digest in expected:
             block = source[source.index(start):source.index(end)]
