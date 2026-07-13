@@ -1,0 +1,67 @@
+{
+  "taxonomy_version": 1,
+  "themes": [
+    {
+      "order": 1,
+      "id": "home-belonging",
+      "label": "Home / Belonging",
+      "color": "#171717",
+      "description": "Dreams of a safe home base and reciprocal belonging with family, a partner, friends, or community.",
+      "classification_guidance": "Use for sanctuary, rootedness, reciprocal love, family, friendship, or community. Do not use for material stability alone."
+    },
+    {
+      "order": 2,
+      "id": "cultivation",
+      "label": "Cultivation",
+      "color": "#a3a3a3",
+      "description": "Dreams of growing or tending land, food, a creative practice, study, a business, or a way of life over time.",
+      "classification_guidance": "Use for making, growing, learning, practicing, building, or tending over time. Publicly sharing the result may also qualify for Transmission."
+    },
+    {
+      "order": 3,
+      "id": "service",
+      "label": "Service",
+      "color": "#404040",
+      "description": "Dreams of directly helping, healing, teaching, advocating for, or materially supporting people, communities, or animals.",
+      "classification_guidance": "Use for direct help, care, repair, teaching, advocacy, or material support. Do not infer it from a caring personality without a stated aspiration."
+    },
+    {
+      "order": 4,
+      "id": "freedom",
+      "label": "Freedom",
+      "color": "#d4d4d4",
+      "description": "Dreams of autonomy over movement, time, place, identity, or the terms of work and daily life.",
+      "classification_guidance": "Use for mobility, travel, release, independence, time autonomy, or living authentically. Financial stability alone is Self-Sufficiency, not Freedom."
+    },
+    {
+      "order": 5,
+      "id": "stewardship",
+      "label": "Stewardship",
+      "color": "#525252",
+      "description": "Dreams of taking durable responsibility for land, resources, institutions, family wellbeing, or community continuity.",
+      "classification_guidance": "Use for sustained custodianship beyond the self: land, resources, institutions, family wellbeing, or community continuity. Direct aid may also qualify for Service."
+    },
+    {
+      "order": 6,
+      "id": "self-sufficiency",
+      "label": "Self-Sufficiency",
+      "color": "#e5e5e5",
+      "description": "Dreams of a dependable material base—income, health, home, land, or food—that reduces survival pressure and reliance on unstable systems.",
+      "classification_guidance": "Use for financial security, stable work, health, housing, land, food, or other dependable material foundations. Assign Home / Belonging too only when relationship or rootedness is present."
+    },
+    {
+      "order": 7,
+      "id": "transmission",
+      "label": "Transmission",
+      "color": "#737373",
+      "description": "Dreams of carrying knowledge, art, story, skill, culture, or legacy outward to others or forward to another generation.",
+      "classification_guidance": "Use for teaching, publishing, performing, sharing creative work, influencing, communicating, or carrying a legacy. Private making alone is Cultivation."
+    }
+  ],
+  "shared_boundaries": [
+    "Assign every materially expressed theme; assignments are multi-label and have no primary theme.",
+    "Use only the dreams summary and verbatim text. Do not infer themes from placements, lessons, life events, notes, or isolated words.",
+    "Peace, rest, recovery, recognition, status, and literal sleep dreams remain unthemed unless the surrounding aspiration establishes one of the seven themes.",
+    "Use an empty theme_ids array when there is no current aspiration, the response is unclear, or none of the seven themes honestly applies."
+  ]
+}
