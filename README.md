@@ -26,6 +26,12 @@ they've attracted.
   `text`, and extracted fields (`venus_sign/house`, `nn_sign/house`,
   `saturn_sign/house`, `dreams`, `lessons_attracted`, `life_events`, `notes`)
 - `data/extracted.csv` — same data flattened for spreadsheets
+- `data/dream_themes.json` — versioned seven-theme taxonomy, public theme
+  descriptions, and private classification boundaries
+- `data/dream_theme_assignments.json` — reviewed multi-label theme assignments
+  for every non-empty Dream response, tied to the source text by digest
+- `data/dream_theme_review.json` — blind secondary-review sample and the
+  machine-readable resolution of every disagreement
 - `data/new_batch6.json` — the 67 reviewed rows added by the Jul 12 refresh
 - `data/new_batch6_page*_raw.json` — all eight provider pages from the Jul 12
   cursor walk, retained before normalization
@@ -39,6 +45,13 @@ they've attracted.
 Extraction was done by LLM reading of each comment, not regex. Paraphrased
 fields (`dreams`, `lessons_attracted`, `life_events`) summarize the commenter's
 own words; `text` is always verbatim for re-checking.
+
+Dream themes are also assigned by reading each response, not by keyword
+search. A response may belong to more than one of the seven themes, or remain
+unthemed when none honestly applies. The page's pie therefore shows each
+theme's share of all assignments, not a percentage of respondents. Theme
+descriptions appear once in the chart legend; the more detailed classification
+boundaries remain in the backend taxonomy.
 
 ## Caveats
 
@@ -79,9 +92,16 @@ own words; `text` is always verbatim for re-checking.
 - Saturn house: 12th 55, 10th 44, 11th 43, 1st 33, 8th 28
 - 238/355 shared dreams, 189/355 named lessons/attraction patterns, 161/355
   described hardships/life events
+- Dream themes: 215/238 responses map to at least one theme, with 558
+  multi-label assignments total — Self-Sufficiency 117, Freedom 104,
+  Home / Belonging 98, Cultivation 98, Service 52, Transmission 47, and
+  Stewardship 42
 
 ## Page
 
 `index.html` — self-contained viewer (inline Tailwind via CDN, needs network
-for styles/font). Regenerate after data changes with `python3 build_page.py`
-(also rewrites `data/extracted.csv`).
+for styles/font). It keeps the six existing placement graphs and adds a static
+Dream-theme pie with its explanatory legend. Regenerate after data or theme
+changes with `python3 build_page.py` (also rewrites `data/extracted.csv`). The
+build fails if a non-empty Dream is missing an assignment, a source digest is
+stale, or the required secondary review is incomplete.

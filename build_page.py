@@ -1,26 +1,304 @@
 #!/usr/bin/env python3
 """Embed data/extracted.json into a self-contained index.html (inline Tailwind)."""
 import base64
-import json
 import csv
+import hashlib
+import html as html_lib
+import json
+import math
+import re
 from pathlib import Path
 
 root = Path(__file__).parent
-data = json.loads((root / "data/extracted.json").read_text())
 
-# keep the CSV in sync
-fields = ["username","display_name","created_time","digg_count","reply_count",
-          "venus_sign","venus_house","nn_sign","nn_house","saturn_sign","saturn_house",
-          "dreams","lessons_attracted","life_events","notes","text"]
-with open(root / "data/extracted.csv", "w", newline="") as f:
-    w = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
-    w.writeheader()
-    w.writerows(data)
+THEME_ID_ORDER = [
+    "home-belonging",
+    "cultivation",
+    "service",
+    "freedom",
+    "stewardship",
+    "self-sufficiency",
+    "transmission",
+]
 
-# inline avatars (fetched by fetch_avatars.py) as data URIs
-for r in data:
-    p = root / "avatars" / f"{r['username']}.jpg"
-    r["avatar"] = ("data:image/jpeg;base64," + base64.b64encode(p.read_bytes()).decode()) if p.exists() else None
+
+def source_key(row):
+    return row["username"], row["created_time"]
+
+
+def dream_source_digest(row):
+    canonical = json.dumps(
+        {"dreams": row["dreams"], "text": row["text"]},
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def load_dream_theme_summary(
+    rows,
+    project_root=None,
+    *,
+    taxonomy_path=None,
+    assignments_path=None,
+    review_path=None,
+):
+    """Validate reviewed theme data and return its public aggregate summary.
+
+    ``project_root`` keeps normal project-relative behavior while the explicit
+    paths allow isolated fixtures to exercise validation without touching the
+    tracked data files.
+    """
+    project_root = Path(project_root) if project_root is not None else root
+    taxonomy_path = Path(taxonomy_path) if taxonomy_path is not None else project_root / "data/dream_themes.json"
+    assignments_path = Path(assignments_path) if assignments_path is not None else project_root / "data/dream_theme_assignments.json"
+    review_path = Path(review_path) if review_path is not None else project_root / "data/dream_theme_review.json"
+
+    taxonomy = json.loads(taxonomy_path.read_text())
+    assignment_doc = json.loads(assignments_path.read_text())
+    review = json.loads(review_path.read_text())
+
+    if taxonomy.get("taxonomy_version") != 1:
+        raise ValueError("Dream theme taxonomy_version must be 1")
+    themes = taxonomy.get("themes", [])
+    if [theme.get("id") for theme in themes] != THEME_ID_ORDER:
+        raise ValueError("Dream themes must contain the seven IDs in taxonomy order")
+    for index, theme in enumerate(themes, 1):
+        if theme.get("order") != index:
+            raise ValueError(f"Dream theme order is invalid for {theme.get('id')}")
+        if not theme.get("label") or not theme.get("description") or not theme.get("classification_guidance"):
+            raise ValueError(f"Dream theme copy is incomplete for {theme.get('id')}")
+        if not re.fullmatch(r"#[0-9a-fA-F]{6}", theme.get("color", "")):
+            raise ValueError(f"Dream theme color is invalid for {theme.get('id')}")
+
+    if assignment_doc.get("taxonomy_version") != 1:
+        raise ValueError("Dream assignment taxonomy_version must be 1")
+    dream_rows = [row for row in rows if row.get("dreams")]
+    source_by_key = {source_key(row): row for row in dream_rows}
+    if len(source_by_key) != len(dream_rows):
+        raise ValueError("Dream response identities are not unique")
+
+    assignments = assignment_doc.get("assignments", [])
+    assignment_by_key = {}
+    for assignment in assignments:
+        key = assignment.get("username"), assignment.get("created_time")
+        if key in assignment_by_key:
+            raise ValueError(f"Duplicate Dream assignment for {key[0]} at {key[1]}")
+        source = source_by_key.get(key)
+        if source is None:
+            raise ValueError(f"Orphaned Dream assignment for {key[0]} at {key[1]}")
+        if assignment.get("source_digest") != dream_source_digest(source):
+            raise ValueError(f"Stale Dream assignment for {key[0]} at {key[1]}")
+        if assignment.get("review_status") != "reviewed":
+            raise ValueError(f"Unreviewed Dream assignment for {key[0]} at {key[1]}")
+        theme_ids = assignment.get("theme_ids")
+        if not isinstance(theme_ids, list) or len(theme_ids) != len(set(theme_ids)):
+            raise ValueError(f"Invalid Dream theme list for {key[0]} at {key[1]}")
+        if any(theme_id not in THEME_ID_ORDER for theme_id in theme_ids):
+            raise ValueError(f"Unknown Dream theme for {key[0]} at {key[1]}")
+        if theme_ids != sorted(theme_ids, key=THEME_ID_ORDER.index):
+            raise ValueError(f"Dream themes are out of taxonomy order for {key[0]} at {key[1]}")
+        assignment_by_key[key] = assignment
+
+    missing = set(source_by_key) - set(assignment_by_key)
+    if missing:
+        username, created_time = sorted(missing)[0]
+        raise ValueError(f"Missing Dream assignment for {username} at {created_time}")
+
+    if review.get("taxonomy_version") != 1 or not review.get("all_disagreements_resolved"):
+        raise ValueError("Dream theme secondary review is incomplete")
+    if review.get("review_method") != "blind-independent-pass":
+        raise ValueError("Dream theme review_method must be blind-independent-pass")
+    if review.get("sample_rule") != (
+        "sorted response keys where index % 5 == 0, plus every empty-theme "
+        "and four-plus-theme assignment"
+    ):
+        raise ValueError("Dream theme sample_rule does not match the required review sample")
+    sorted_keys = sorted(source_by_key)
+    required_review_keys = {key for index, key in enumerate(sorted_keys) if index % 5 == 0}
+    required_review_keys.update(
+        key for key, assignment in assignment_by_key.items()
+        if not assignment["theme_ids"] or len(assignment["theme_ids"]) >= 4
+    )
+    secondary_by_key = {}
+    for secondary in review.get("secondary_reviews", []):
+        key = secondary.get("username"), secondary.get("created_time")
+        theme_ids = secondary.get("theme_ids")
+        if key in secondary_by_key or key not in source_by_key:
+            raise ValueError(f"Invalid secondary review identity for {key[0]} at {key[1]}")
+        if not isinstance(theme_ids, list) or len(theme_ids) != len(set(theme_ids)):
+            raise ValueError(f"Invalid secondary theme list for {key[0]} at {key[1]}")
+        if any(theme_id not in THEME_ID_ORDER for theme_id in theme_ids):
+            raise ValueError(f"Unknown secondary Dream theme for {key[0]} at {key[1]}")
+        if theme_ids != sorted(theme_ids, key=THEME_ID_ORDER.index):
+            raise ValueError(f"Secondary Dream themes are out of order for {key[0]} at {key[1]}")
+        secondary_by_key[key] = secondary
+    if set(secondary_by_key) != required_review_keys:
+        raise ValueError("Dream theme secondary-review coverage does not match the required sample")
+
+    resolution_by_key = {}
+    for item in review.get("resolutions", []):
+        key = item.get("username"), item.get("created_time")
+        if key in resolution_by_key:
+            raise ValueError(f"Duplicate Dream resolution for {key[0]} at {key[1]}")
+        if key not in secondary_by_key:
+            raise ValueError(f"Orphaned Dream resolution for {key[0]} at {key[1]}")
+        resolution_by_key[key] = item
+    for key, secondary in secondary_by_key.items():
+        final_ids = assignment_by_key[key]["theme_ids"]
+        secondary_ids = secondary_by_key[key]["theme_ids"]
+        resolution = resolution_by_key.get(key)
+        if resolution is None:
+            if final_ids != secondary_ids:
+                raise ValueError(f"Unresolved Dream theme disagreement for {key[0]} at {key[1]}")
+            continue
+
+        resolution_lists = {}
+        for field in ("primary_theme_ids", "secondary_theme_ids", "resolved_theme_ids"):
+            theme_ids = resolution.get(field)
+            if not isinstance(theme_ids, list) or len(theme_ids) != len(set(theme_ids)):
+                raise ValueError(f"Invalid {field} for {key[0]} at {key[1]}")
+            if any(theme_id not in THEME_ID_ORDER for theme_id in theme_ids):
+                raise ValueError(f"Unknown theme in {field} for {key[0]} at {key[1]}")
+            if theme_ids != sorted(theme_ids, key=THEME_ID_ORDER.index):
+                raise ValueError(f"Themes are out of order in {field} for {key[0]} at {key[1]}")
+            resolution_lists[field] = theme_ids
+        if resolution_lists["primary_theme_ids"] == resolution_lists["secondary_theme_ids"]:
+            raise ValueError(f"Dream resolution does not record a disagreement for {key[0]} at {key[1]}")
+        if resolution.get("secondary_theme_ids") != secondary_ids:
+            raise ValueError(f"Resolution secondary themes do not match for {key[0]} at {key[1]}")
+        if resolution.get("resolved_theme_ids") != final_ids:
+            raise ValueError(f"Final Dream assignment does not match resolution for {key[0]} at {key[1]}")
+
+    counts = {theme_id: 0 for theme_id in THEME_ID_ORDER}
+    themed_response_count = 0
+    for assignment in assignments:
+        if assignment["theme_ids"]:
+            themed_response_count += 1
+        for theme_id in assignment["theme_ids"]:
+            counts[theme_id] += 1
+    total_theme_assignments = sum(counts.values())
+    if total_theme_assignments == 0:
+        raise ValueError("Dream theme assignments cannot total zero")
+
+    public_themes = []
+    for theme in themes:
+        count = counts[theme["id"]]
+        public_themes.append({
+            "id": theme["id"],
+            "label": theme["label"],
+            "color": theme["color"],
+            "description": theme["description"],
+            "count": count,
+            "percentage": count / total_theme_assignments * 100,
+        })
+    return {
+        "taxonomy_version": 1,
+        "reviewed_dream_count": len(dream_rows),
+        "themed_response_count": themed_response_count,
+        "total_theme_assignments": total_theme_assignments,
+        "themes": public_themes,
+    }
+
+
+def render_dream_theme_pie(summary):
+    center = 160
+    radius = 128
+    angle = -90.0
+    paths = []
+    markers = []
+
+    def point(degrees, distance):
+        radians = math.radians(degrees)
+        return center + distance * math.cos(radians), center + distance * math.sin(radians)
+
+    nonzero = [theme for theme in summary["themes"] if theme["count"]]
+    for ordinal, theme in enumerate(summary["themes"], 1):
+        count = theme["count"]
+        if not count:
+            continue
+        sweep = count / summary["total_theme_assignments"] * 360
+        end = angle + sweep
+        label = html_lib.escape(theme["label"])
+        percent = theme["percentage"]
+        percent_text = "0%" if percent == 0 else f"{percent:.1f}%"
+        title = html_lib.escape(f"{theme['label']}: {count} assignments, {percent_text}")
+        if len(nonzero) == 1:
+            path_markup = (
+                f'<circle cx="{center}" cy="{center}" r="{radius}" fill="{theme["color"]}" '
+                f'stroke="#ffffff" stroke-width="2"><title>{title}</title></circle>'
+            )
+        else:
+            x1, y1 = point(angle, radius)
+            x2, y2 = point(end, radius)
+            large_arc = 1 if sweep > 180 else 0
+            path_markup = (
+                f'<path d="M {center} {center} L {x1:.3f} {y1:.3f} '
+                f'A {radius} {radius} 0 {large_arc} 1 {x2:.3f} {y2:.3f} Z" '
+                f'fill="{theme["color"]}" stroke="#ffffff" stroke-width="2">'
+                f'<title>{title}</title></path>'
+            )
+        paths.append(path_markup)
+
+        middle = angle + sweep / 2
+        marker_distance = radius * 0.66 if sweep >= 15 else radius + 18
+        marker_x, marker_y = point(middle, marker_distance)
+        if sweep < 15:
+            line_x1, line_y1 = point(middle, radius + 2)
+            line_x2, line_y2 = point(middle, radius + 10)
+            markers.append(
+                f'<line x1="{line_x1:.3f}" y1="{line_y1:.3f}" x2="{line_x2:.3f}" y2="{line_y2:.3f}" '
+                'stroke="#737373" stroke-width="1" />'
+            )
+        markers.append(
+            f'<g aria-label="{label}"><circle cx="{marker_x:.3f}" cy="{marker_y:.3f}" r="11" '
+            'fill="#ffffff" stroke="#a3a3a3" stroke-width="1" />'
+            f'<text x="{marker_x:.3f}" y="{marker_y + 0.5:.3f}" text-anchor="middle" '
+            'dominant-baseline="middle" fill="#171717" font-size="11" font-weight="600">'
+            f'{ordinal}</text></g>'
+        )
+        angle = end
+
+    legend = []
+    for ordinal, theme in enumerate(summary["themes"], 1):
+        label = html_lib.escape(theme["label"])
+        description = html_lib.escape(theme["description"])
+        percent_text = "0%" if theme["percentage"] == 0 else f'{theme["percentage"]:.1f}%'
+        legend.append(f'''
+        <li class="grid grid-cols-[1.5rem_0.75rem_1fr_auto] gap-x-2.5 gap-y-1 border-t border-neutral-200 py-3 first:border-t-0 first:pt-0">
+          <span class="flex size-6 items-center justify-center rounded-full border border-neutral-300 bg-white text-[11px] font-semibold">{ordinal}</span>
+          <span class="mt-1 block size-3 rounded-sm border border-neutral-300" style="background:{theme['color']}"></span>
+          <span class="text-sm font-medium">{label}</span>
+          <span class="text-xs tabular-nums text-neutral-500">{theme['count']} · {percent_text}</span>
+          <p class="col-start-3 col-span-2 text-xs leading-relaxed text-neutral-500">{description}</p>
+        </li>''')
+
+    reviewed = summary["reviewed_dream_count"]
+    themed = summary["themed_response_count"]
+    assignments = summary["total_theme_assignments"]
+    return f'''
+  <section id="dream-themes" class="mt-16 border-t border-neutral-200 pt-12">
+    <div class="mx-auto max-w-prose text-center">
+      <h2 class="font-serif text-2xl font-normal tracking-tight">Dream themes</h2>
+      <p class="mt-2 text-xs text-neutral-500 text-balance">{themed} of {reviewed} reviewed Dream responses map to at least one theme · {assignments} theme assignments</p>
+      <p class="mt-2 text-xs text-neutral-400 text-balance">A response can belong to more than one theme. Pie slices show the share of all theme assignments, not the share of people.</p>
+    </div>
+    <div class="mt-8 grid items-start gap-8 md:grid-cols-[minmax(0,20rem)_1fr] md:gap-10">
+      <div class="mx-auto w-full max-w-xs">
+        <svg viewBox="0 0 320 320" role="img" aria-labelledby="dream-pie-title dream-pie-desc" class="block h-auto w-full overflow-visible">
+          <title id="dream-pie-title">Dream theme assignment distribution</title>
+          <desc id="dream-pie-desc">A seven-part pie chart. Numbered slices correspond to the ordered legend.</desc>
+          {''.join(paths)}
+          <circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="#a3a3a3" stroke-width="1" />
+          {''.join(markers)}
+        </svg>
+      </div>
+      <ol class="min-w-0">{''.join(legend)}
+      </ol>
+    </div>
+  </section>'''
+
 
 TEMPLATE = r"""<!doctype html>
 <html lang="en">
@@ -97,6 +375,8 @@ tailwind.config = {
     </p>
 
   </div>
+
+__DREAM_THEME_PIE__
 
   <div class="mt-12 mx-auto max-w-prose flex flex-wrap items-center gap-2">
     <input id="q" type="search" placeholder="Search dreams, lessons, comments&hellip;"
@@ -268,30 +548,65 @@ render();
 </html>
 """
 
-bailey = root / "avatars" / "thebaileygrind_.jpg"
-bailey_img = (f'<img src="data:image/jpeg;base64,{base64.b64encode(bailey.read_bytes()).decode()}" alt="" '
-              'class="size-5 rounded-full object-cover">') if bailey.exists() else ""
+def build_page(project_root=None):
+    """Build the self-contained HTML page and synchronized extracted CSV."""
+    project_root = Path(project_root) if project_root is not None else root
+    data = json.loads((project_root / "data/extracted.json").read_text())
+    dream_theme_summary = load_dream_theme_summary(data, project_root=project_root)
+    dream_theme_pie = render_dream_theme_pie(dream_theme_summary)
 
-logo = root / "avatars" / "communion_logo.png"
-logo_b64 = base64.b64encode(logo.read_bytes()).decode() if logo.exists() else ""
-logo_img = (f'<img src="data:image/png;base64,{logo_b64}" alt="Communion" class="size-10 mx-auto">') if logo_b64 else ""
-logo_sm = (f'<img src="data:image/png;base64,{logo_b64}" alt="" class="size-7">') if logo_b64 else ""
+    # keep the CSV in sync
+    fields = ["username","display_name","created_time","digg_count","reply_count",
+              "venus_sign","venus_house","nn_sign","nn_house","saturn_sign","saturn_house",
+              "dreams","lessons_attracted","life_events","notes","text"]
+    with open(project_root / "data/extracted.csv", "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(data)
 
-# newest comment in the set = how current the data is; rendered relative by rel()
-updated = max(r["created_time"] for r in data)
+    # inline avatars (fetched by fetch_avatars.py) as data URIs
+    for row in data:
+        avatar = project_root / "avatars" / f"{row['username']}.jpg"
+        row["avatar"] = (
+            "data:image/jpeg;base64," + base64.b64encode(avatar.read_bytes()).decode()
+            if avatar.exists()
+            else None
+        )
 
-SITE = "https://taurus-rising-comments.vercel.app"
-DESC = (f"{len(data)} Taurus risings share their Venus, north node, and Saturn "
-        "placements, along with their dreams and the lessons they've attracted.")
+    bailey = project_root / "avatars" / "thebaileygrind_.jpg"
+    bailey_img = (f'<img src="data:image/jpeg;base64,{base64.b64encode(bailey.read_bytes()).decode()}" alt="" '
+                  'class="size-5 rounded-full object-cover">') if bailey.exists() else ""
 
-html = (TEMPLATE
-        .replace("__DATA__", json.dumps(data, ensure_ascii=False))
-        .replace("__BAILEY_AVATAR__", bailey_img)
-        .replace("__COMMUNION_LOGO_SM__", logo_sm)
-        .replace("__COMMUNION_LOGO__", logo_img)
-        .replace("__UPDATED__", updated)
-        .replace("__SITE__", SITE)
-        .replace("__DESC__", DESC)
-        .replace("__COUNT__", str(len(data))))
-(root / "index.html").write_text(html)
-print(f"wrote index.html ({len(html):,} bytes, {len(data)} records)")
+    logo = project_root / "avatars" / "communion_logo.png"
+    logo_b64 = base64.b64encode(logo.read_bytes()).decode() if logo.exists() else ""
+    logo_img = (f'<img src="data:image/png;base64,{logo_b64}" alt="Communion" class="size-10 mx-auto">') if logo_b64 else ""
+    logo_sm = (f'<img src="data:image/png;base64,{logo_b64}" alt="" class="size-7">') if logo_b64 else ""
+
+    # newest comment in the set = how current the data is; rendered relative by rel()
+    updated = max(row["created_time"] for row in data)
+
+    site = "https://taurus-rising-comments.vercel.app"
+    description = (f"{len(data)} Taurus risings share their Venus, north node, and Saturn "
+                   "placements, along with their dreams and the lessons they've attracted.")
+
+    output = (TEMPLATE
+              .replace("__DATA__", json.dumps(data, ensure_ascii=False))
+              .replace("__BAILEY_AVATAR__", bailey_img)
+              .replace("__COMMUNION_LOGO_SM__", logo_sm)
+              .replace("__COMMUNION_LOGO__", logo_img)
+              .replace("__DREAM_THEME_PIE__", dream_theme_pie)
+              .replace("__UPDATED__", updated)
+              .replace("__SITE__", site)
+              .replace("__DESC__", description)
+              .replace("__COUNT__", str(len(data))))
+    (project_root / "index.html").write_text(output)
+    print(f"wrote index.html ({len(output):,} bytes, {len(data)} records)")
+    return output
+
+
+def main():
+    build_page()
+
+
+if __name__ == "__main__":
+    main()

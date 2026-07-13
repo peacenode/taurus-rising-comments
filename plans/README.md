@@ -8,7 +8,7 @@ starting, honor its STOP conditions, and update the status row when finished.
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |---|---|---:|---:|---|---|
-| [001](./001-add-dream-themes-pie-chart.md) | Add a Dreams pie chart without changing the existing graphs | P1 | L | - | TODO |
+| [001](./001-add-dream-themes-pie-chart.md) | Add a Dreams pie chart without changing the existing graphs | P1 | L | - | DONE |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) |
 REJECTED (with one-line rationale)
