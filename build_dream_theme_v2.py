@@ -27,9 +27,13 @@ from typing import Any, Iterable
 ROOT = Path(__file__).resolve().parent
 SOURCE_PATH = ROOT / "data/extracted.json"
 TAXONOMY_PATH = ROOT / "data/dream_themes_v2.json"
+CALIBRATION_PATH = ROOT / "data/dream_theme_calibration_v2.json"
 EXPECTED_DREAM_ROWS = 238
+EXPECTED_CALIBRATION_ROWS = 38
+EXPECTED_EVALUATION_ROWS = EXPECTED_DREAM_ROWS - EXPECTED_CALIBRATION_ROWS
 SCHEMA_VERSION = 2
 TAXONOMY_VERSION = 2
+CALIBRATION_PROTOCOL_NOTE = "Calibration rows are excluded from blind agreement metrics."
 SOURCE_DIGEST_ALGORITHM = "sha256-canonical-dreams-text-v1"
 JUDGMENT_DIGEST_ALGORITHM = "sha256-canonical-json-v1"
 V1_ASSIGNMENTS_SUPERSEDES = {
@@ -69,6 +73,8 @@ class Context:
     taxonomy: dict[str, Any]
     source_rows: tuple[dict[str, Any], ...]
     source_by_key: dict[tuple[str, str], dict[str, Any]]
+    calibration_keys: frozenset[tuple[str, str]]
+    calibration_expected: dict[tuple[str, str], tuple[str | None, frozenset[str]]]
     theme_ids: tuple[str, ...]
     theme_order: dict[str, int]
     confidence_values: frozenset[str]
@@ -139,6 +145,112 @@ def key_label(key: tuple[str, str]) -> str:
 
 def sorted_keys(keys: Iterable[tuple[str, str]]) -> list[tuple[str, str]]:
     return sorted(keys, key=lambda item: (item[0], item[1]))
+
+
+def load_calibration(
+    source_by_key: dict[tuple[str, str], dict[str, Any]],
+    theme_order: dict[str, int],
+) -> tuple[
+    frozenset[tuple[str, str]],
+    dict[tuple[str, str], tuple[str | None, frozenset[str]]],
+]:
+    """Validate the fixed calibration corpus against the current Dream rows."""
+    document = load_json(CALIBRATION_PATH)
+    require(isinstance(document, dict), "v2 calibration must be a JSON object")
+    expected_top = {"schema_version", "taxonomy_version", "protocol_note", "rows"}
+    require(
+        set(document) == expected_top,
+        f"v2 calibration must contain exactly {sorted(expected_top)}",
+    )
+    require(document.get("schema_version") == SCHEMA_VERSION, "calibration schema_version must be 2")
+    require(
+        document.get("taxonomy_version") == TAXONOMY_VERSION,
+        "calibration taxonomy_version must be 2",
+    )
+    require(
+        document.get("protocol_note") == CALIBRATION_PROTOCOL_NOTE,
+        f"calibration protocol_note must be {CALIBRATION_PROTOCOL_NOTE!r}",
+    )
+
+    rows = document.get("rows")
+    require(isinstance(rows, list), "calibration rows must be an array")
+    require(
+        len(rows) == EXPECTED_CALIBRATION_ROWS,
+        f"expected {EXPECTED_CALIBRATION_ROWS} calibration rows, found {len(rows)}",
+    )
+    expected_fields = {
+        "username",
+        "created_time",
+        "category",
+        "expected_primary_theme_id",
+        "expected_co_dominant_theme_ids",
+        "evidence_quotes",
+        "decision",
+    }
+    categories = {"obvious-single", "genuine-co-dominant", "unthemed", "difficult-boundary"}
+    keys: set[tuple[str, str]] = set()
+    expected_public_roles: dict[tuple[str, str], tuple[str | None, frozenset[str]]] = {}
+    for index, row in enumerate(rows):
+        label = f"calibration row[{index}]"
+        require(isinstance(row, dict), f"{label} must be an object")
+        require(set(row) == expected_fields, f"{label} must contain exactly {sorted(expected_fields)}")
+
+        username = row.get("username")
+        created_time = row.get("created_time")
+        require(isinstance(username, str) and username, f"{label} username must be non-empty")
+        require(isinstance(created_time, str) and created_time, f"{label} created_time must be non-empty")
+        key = username, created_time
+        require(key in source_by_key, f"{label} does not exactly identify a current Dream row: {key_label(key)}")
+        require(key not in keys, f"duplicate calibration identity {key_label(key)}")
+        keys.add(key)
+
+        category = row.get("category")
+        require(category in categories, f"{label} has invalid category {category!r}")
+        primary = row.get("expected_primary_theme_id")
+        require(primary is None or primary in theme_order, f"{label} has invalid expected primary {primary!r}")
+        co_dominant = row.get("expected_co_dominant_theme_ids")
+        require(isinstance(co_dominant, list), f"{label} expected co-dominant themes must be an array")
+        require(0 <= len(co_dominant) <= 2, f"{label} cannot have more than two expected co-dominant themes")
+        require(
+            all(theme_id in theme_order for theme_id in co_dominant),
+            f"{label} has an invalid expected co-dominant theme",
+        )
+        require(len(co_dominant) == len(set(co_dominant)), f"{label} repeats an expected co-dominant theme")
+        require(primary not in co_dominant, f"{label} repeats its primary as co-dominant")
+        require(
+            co_dominant == sorted(co_dominant, key=theme_order.__getitem__),
+            f"{label} expected co-dominant themes must follow taxonomy order",
+        )
+        require(primary is not None or not co_dominant, f"{label} cannot be co-dominant without a primary")
+        if category == "obvious-single":
+            require(primary is not None and not co_dominant, f"{label} obvious-single must have one primary only")
+        elif category == "genuine-co-dominant":
+            require(primary is not None and co_dominant, f"{label} genuine-co-dominant needs public co-dominance")
+        elif category == "unthemed":
+            require(primary is None and not co_dominant, f"{label} unthemed example cannot have public themes")
+        expected_public_roles[key] = primary, frozenset(co_dominant)
+
+        quotes = row.get("evidence_quotes")
+        require(isinstance(quotes, list) and quotes, f"{label} evidence_quotes must be non-empty")
+        require(
+            all(isinstance(quote, str) and quote for quote in quotes),
+            f"{label} evidence_quotes must contain non-empty strings",
+        )
+        require(len(quotes) == len(set(quotes)), f"{label} repeats an evidence quote")
+        source_text = source_by_key[key]["text"]
+        for quote in quotes:
+            require(
+                quote in source_text,
+                f"{label} evidence quote is not an exact substring of the current source row: {quote!r}",
+            )
+        decision = row.get("decision")
+        require(isinstance(decision, str) and decision.strip(), f"{label} decision must be non-empty")
+
+    require(
+        len(source_by_key) - len(keys) == EXPECTED_EVALUATION_ROWS,
+        "calibration corpus must partition the 238 Dream rows into 38 calibration and 200 evaluation rows",
+    )
+    return frozenset(keys), expected_public_roles
 
 
 def load_context() -> Context:
@@ -220,12 +332,17 @@ def load_context() -> Context:
     source_by_key = {source_key(row): row for row in dream_rows}
     require(len(source_by_key) == len(dream_rows), "Dream response identities must be unique")
 
+    theme_order = {theme_id: index for index, theme_id in enumerate(theme_ids)}
+    calibration_keys, calibration_expected = load_calibration(source_by_key, theme_order)
+
     return Context(
         taxonomy=taxonomy,
         source_rows=dream_rows,
         source_by_key=source_by_key,
+        calibration_keys=calibration_keys,
+        calibration_expected=calibration_expected,
         theme_ids=theme_ids,
-        theme_order={theme_id: index for index, theme_id in enumerate(theme_ids)},
+        theme_order=theme_order,
         confidence_values=frozenset(confidence_values),
         minimum_score=scale["minimum_per_dimension"],
         maximum_score=scale["maximum_per_dimension"],
@@ -699,10 +816,11 @@ def theme_f1(
     theme_id: str,
     *,
     primary_only: bool,
+    keys: Iterable[tuple[str, str]],
 ) -> dict[str, Any]:
     a_positive: set[tuple[str, str]] = set()
     b_positive: set[tuple[str, str]] = set()
-    for key in pass_a:
+    for key in keys:
         a_primary, _, a_public = public_signature(pass_a[key])
         b_primary, _, b_public = public_signature(pass_b[key])
         if (a_primary == theme_id) if primary_only else (theme_id in a_public):
@@ -727,48 +845,98 @@ def theme_f1(
     }
 
 
-def compare_passes(pass_a_document: dict[str, Any], pass_b_document: dict[str, Any], context: Context) -> dict[str, Any]:
-    pass_a = assignment_map(pass_a_document)
-    pass_b = assignment_map(pass_b_document)
+def agreement_metrics(
+    pass_a: dict[tuple[str, str], dict[str, Any]],
+    pass_b: dict[tuple[str, str], dict[str, Any]],
+    keys: Iterable[tuple[str, str]],
+) -> dict[str, Any]:
+    metric_keys = tuple(keys)
     exact_set = 0
     primary = 0
     exact_roles = 0
-    required: list[dict[str, Any]] = []
-
-    for key in sorted_keys(pass_a):
+    for key in metric_keys:
         a_primary, a_co, a_set = public_signature(pass_a[key])
         b_primary, b_co, b_set = public_signature(pass_b[key])
         exact_set += a_set == b_set
         primary += a_primary == b_primary
         exact_roles += a_primary == b_primary and a_co == b_co
+    total = len(metric_keys)
+    return {
+        "exact_public_set": {
+            "count": exact_set,
+            "rate": safe_ratio(exact_set, total),
+        },
+        "primary": {
+            "count": primary,
+            "rate": safe_ratio(primary, total),
+        },
+        "exact_public_roles": {
+            "count": exact_roles,
+            "rate": safe_ratio(exact_roles, total),
+        },
+    }
+
+
+def compare_passes(pass_a_document: dict[str, Any], pass_b_document: dict[str, Any], context: Context) -> dict[str, Any]:
+    pass_a = assignment_map(pass_a_document)
+    pass_b = assignment_map(pass_b_document)
+    all_keys = sorted_keys(pass_a)
+    require(set(pass_a) == set(pass_b), "blind passes must cover the same Dream identities")
+    require(
+        context.calibration_keys <= set(pass_a),
+        "all calibration identities must be present in both complete blind passes",
+    )
+    evaluation_keys = [key for key in all_keys if key not in context.calibration_keys]
+    require(
+        len(evaluation_keys) == EXPECTED_EVALUATION_ROWS,
+        f"agreement evaluation must contain exactly {EXPECTED_EVALUATION_ROWS} non-calibration rows",
+    )
+    required: list[dict[str, Any]] = []
+
+    # Adjudication is a safety gate over the entire source corpus. Calibration
+    # membership affects release/agreement metrics only; it never exempts a row
+    # from disagreement, low-confidence, or three-public-theme review.
+    for key in all_keys:
         reasons = required_adjudication_reasons(pass_a[key], pass_b[key])
+        expected = context.calibration_expected.get(key)
+        if expected is not None:
+            a_primary, a_co, _ = public_signature(pass_a[key])
+            b_primary, b_co, _ = public_signature(pass_b[key])
+            if (a_primary, a_co) != expected or (b_primary, b_co) != expected:
+                reasons.append("calibration-anchor-mismatch")
         if reasons:
             required.append({"username": key[0], "created_time": key[1], "reasons": reasons})
 
-    total = len(pass_a)
+    evaluation_agreement = agreement_metrics(pass_a, pass_b, evaluation_keys)
+    full_set_agreement = agreement_metrics(pass_a, pass_b, all_keys)
     return {
-        "row_count": total,
-        "agreement": {
-            "exact_public_set": {
-                "count": exact_set,
-                "rate": safe_ratio(exact_set, total),
-            },
-            "primary": {
-                "count": primary,
-                "rate": safe_ratio(primary, total),
-            },
-            "exact_public_roles": {
-                "count": exact_roles,
-                "rate": safe_ratio(exact_roles, total),
-            },
-        },
+        "row_count": len(all_keys),
+        "evaluation_row_count": len(evaluation_keys),
+        "calibration_row_count": len(context.calibration_keys),
+        "agreement": evaluation_agreement,
         "per_theme_public_f1": {
-            theme_id: theme_f1(pass_a, pass_b, theme_id, primary_only=False)
+            theme_id: theme_f1(
+                pass_a,
+                pass_b,
+                theme_id,
+                primary_only=False,
+                keys=evaluation_keys,
+            )
             for theme_id in context.theme_ids
         },
         "per_theme_primary_f1": {
-            theme_id: theme_f1(pass_a, pass_b, theme_id, primary_only=True)
+            theme_id: theme_f1(
+                pass_a,
+                pass_b,
+                theme_id,
+                primary_only=True,
+                keys=evaluation_keys,
+            )
             for theme_id in context.theme_ids
+        },
+        "full_set_descriptive_agreement": {
+            "row_count": len(all_keys),
+            **full_set_agreement,
         },
         "required_adjudications": required,
     }
@@ -887,6 +1055,14 @@ def finalize_documents(
             review_status = "blind-public-role-agreement"
             adjudication_id = None
 
+        expected_calibration = context.calibration_expected.get(key)
+        if expected_calibration is not None:
+            final_primary, final_co_dominant, _ = public_signature(final)
+            require(
+                (final_primary, final_co_dominant) == expected_calibration,
+                f"final assignment for calibration anchor {key_label(key)} does not match its documented public roles",
+            )
+
         final["review_status"] = review_status
         final["adjudication_id"] = adjudication_id
         final_assignments.append(final)
@@ -933,7 +1109,7 @@ def finalize_documents(
         "schema_version": SCHEMA_VERSION,
         "taxonomy_version": TAXONOMY_VERSION,
         "supersedes": V1_REVIEW_SUPERSEDES,
-        "review_method": "two-full-coverage-blind-independent-passes",
+        "review_method": "two-full-coverage-independent-passes-with-calibrated-reconsideration",
         "source_digest_algorithm": SOURCE_DIGEST_ALGORITHM,
         "judgment_digest_algorithm": JUDGMENT_DIGEST_ALGORITHM,
         "source_row_count": len(context.source_rows),
@@ -972,15 +1148,48 @@ def write_json_atomic(path: Path, value: Any) -> None:
 def self_test() -> None:
     context = load_context()
     require(len(context.source_rows) == EXPECTED_DREAM_ROWS, "self-test source coverage failed")
+    require(
+        len(context.calibration_keys) == EXPECTED_CALIBRATION_ROWS,
+        "self-test calibration coverage failed",
+    )
+    require(
+        set(context.calibration_expected) == set(context.calibration_keys),
+        "self-test calibration expectations failed",
+    )
+    evaluation_keys = set(context.source_by_key) - context.calibration_keys
+    require(len(evaluation_keys) == EXPECTED_EVALUATION_ROWS, "self-test evaluation coverage failed")
     text = "🌙 I want freedom and time."
     span = quote_to_span(text, "I want freedom", "self-test")
     require(span["start"] == 2, "evidence offsets are not Unicode code-point indexes")
     require(text[span["start"]:span["end"]] == span["quote"], "evidence span round-trip failed")
     sample = {"b": 2, "a": "é"}
     require(digest_json(sample) == digest_json({"a": "é", "b": 2}), "canonical digest is not key-order stable")
+
+    evaluation_key = "evaluation", "1"
+    calibration_key = "calibration", "1"
+    themed = {"primary": {"theme_id": "freedom"}, "co_dominant": []}
+    unthemed = {"primary": None, "co_dominant": []}
+    sample_a = {evaluation_key: themed, calibration_key: themed}
+    sample_b = {evaluation_key: themed, calibration_key: unthemed}
+    evaluation_agreement = agreement_metrics(sample_a, sample_b, [evaluation_key])
+    full_set_agreement = agreement_metrics(sample_a, sample_b, [evaluation_key, calibration_key])
+    require(
+        evaluation_agreement["primary"] == {"count": 1, "rate": 1.0},
+        "calibration rows leaked into evaluation agreement",
+    )
+    require(
+        full_set_agreement["primary"] == {"count": 1, "rate": 0.5},
+        "full-set descriptive agreement is not independent from evaluation agreement",
+    )
+    require(
+        theme_f1(sample_a, sample_b, "freedom", primary_only=True, keys=[evaluation_key])["f1"] == 1.0,
+        "calibration rows leaked into evaluation per-theme F1",
+    )
     print(pretty_json({
         "valid": True,
         "dream_rows": len(context.source_rows),
+        "calibration_rows": len(context.calibration_keys),
+        "evaluation_rows": len(evaluation_keys),
         "theme_ids": list(context.theme_ids),
         "unicode_span": span,
     }), end="")
