@@ -31,6 +31,10 @@ CALIBRATION_PATH = ROOT / "data/dream_theme_calibration_v2.json"
 EXPECTED_DREAM_ROWS = 238
 EXPECTED_CALIBRATION_ROWS = 38
 EXPECTED_EVALUATION_ROWS = EXPECTED_DREAM_ROWS - EXPECTED_CALIBRATION_ROWS
+MINIMUM_PRIMARY_AGREEMENT = 0.90
+MINIMUM_EXACT_PUBLIC_SET_AGREEMENT = 0.80
+MINIMUM_PER_THEME_PRIMARY_F1 = 0.75
+MINIMUM_PER_THEME_PUBLIC_F1 = 0.70
 SCHEMA_VERSION = 2
 TAXONOMY_VERSION = 2
 CALIBRATION_PROTOCOL_NOTE = "Calibration rows are excluded from blind agreement metrics."
@@ -71,10 +75,12 @@ class ValidationError(ValueError):
 @dataclass(frozen=True)
 class Context:
     taxonomy: dict[str, Any]
+    taxonomy_digest: str
     source_rows: tuple[dict[str, Any], ...]
     source_by_key: dict[tuple[str, str], dict[str, Any]]
     calibration_keys: frozenset[tuple[str, str]]
     calibration_expected: dict[tuple[str, str], tuple[str | None, frozenset[str]]]
+    calibration_digest: str
     theme_ids: tuple[str, ...]
     theme_order: dict[str, int]
     confidence_values: frozenset[str]
@@ -153,6 +159,7 @@ def load_calibration(
 ) -> tuple[
     frozenset[tuple[str, str]],
     dict[tuple[str, str], tuple[str | None, frozenset[str]]],
+    str,
 ]:
     """Validate the fixed calibration corpus against the current Dream rows."""
     document = load_json(CALIBRATION_PATH)
@@ -250,7 +257,7 @@ def load_calibration(
         len(source_by_key) - len(keys) == EXPECTED_EVALUATION_ROWS,
         "calibration corpus must partition the 238 Dream rows into 38 calibration and 200 evaluation rows",
     )
-    return frozenset(keys), expected_public_roles
+    return frozenset(keys), expected_public_roles, digest_json(document)
 
 
 def load_context() -> Context:
@@ -333,14 +340,19 @@ def load_context() -> Context:
     require(len(source_by_key) == len(dream_rows), "Dream response identities must be unique")
 
     theme_order = {theme_id: index for index, theme_id in enumerate(theme_ids)}
-    calibration_keys, calibration_expected = load_calibration(source_by_key, theme_order)
+    calibration_keys, calibration_expected, calibration_digest = load_calibration(
+        source_by_key,
+        theme_order,
+    )
 
     return Context(
         taxonomy=taxonomy,
+        taxonomy_digest=digest_json(taxonomy),
         source_rows=dream_rows,
         source_by_key=source_by_key,
         calibration_keys=calibration_keys,
         calibration_expected=calibration_expected,
+        calibration_digest=calibration_digest,
         theme_ids=theme_ids,
         theme_order=theme_order,
         confidence_values=frozenset(confidence_values),
@@ -706,6 +718,10 @@ def validate_assignments_document(
     allowed_top = {
         "schema_version",
         "taxonomy_version",
+        "taxonomy_digest_algorithm",
+        "taxonomy_digest",
+        "calibration_digest_algorithm",
+        "calibration_digest",
         "supersedes",
         "source_digest_algorithm",
         "source_row_count",
@@ -717,6 +733,22 @@ def validate_assignments_document(
     )
     require(document.get("schema_version") == SCHEMA_VERSION, "assignments schema_version must be 2")
     require(document.get("taxonomy_version") == TAXONOMY_VERSION, "assignments taxonomy_version must be 2")
+    require(
+        document.get("taxonomy_digest_algorithm") == JUDGMENT_DIGEST_ALGORITHM,
+        f"taxonomy_digest_algorithm must be {JUDGMENT_DIGEST_ALGORITHM}",
+    )
+    require(
+        document.get("taxonomy_digest") == active_context.taxonomy_digest,
+        "assignments taxonomy digest does not match the current v2 taxonomy",
+    )
+    require(
+        document.get("calibration_digest_algorithm") == JUDGMENT_DIGEST_ALGORITHM,
+        f"calibration_digest_algorithm must be {JUDGMENT_DIGEST_ALGORITHM}",
+    )
+    require(
+        document.get("calibration_digest") == active_context.calibration_digest,
+        "assignments calibration digest does not match the current v2 calibration corpus",
+    )
     require(
         document.get("supersedes") == V1_ASSIGNMENTS_SUPERSEDES,
         "assignments supersedes metadata does not match the preserved v1 file",
@@ -771,6 +803,10 @@ def validate_assignments_document(
     return {
         "schema_version": SCHEMA_VERSION,
         "taxonomy_version": TAXONOMY_VERSION,
+        "taxonomy_digest_algorithm": JUDGMENT_DIGEST_ALGORITHM,
+        "taxonomy_digest": active_context.taxonomy_digest,
+        "calibration_digest_algorithm": JUDGMENT_DIGEST_ALGORITHM,
+        "calibration_digest": active_context.calibration_digest,
         "supersedes": V1_ASSIGNMENTS_SUPERSEDES,
         "source_digest_algorithm": SOURCE_DIGEST_ALGORITHM,
         "source_row_count": len(active_context.source_rows),
@@ -909,30 +945,61 @@ def compare_passes(pass_a_document: dict[str, Any], pass_b_document: dict[str, A
 
     evaluation_agreement = agreement_metrics(pass_a, pass_b, evaluation_keys)
     full_set_agreement = agreement_metrics(pass_a, pass_b, all_keys)
+    per_theme_public_f1 = {
+        theme_id: theme_f1(
+            pass_a,
+            pass_b,
+            theme_id,
+            primary_only=False,
+            keys=evaluation_keys,
+        )
+        for theme_id in context.theme_ids
+    }
+    per_theme_primary_f1 = {
+        theme_id: theme_f1(
+            pass_a,
+            pass_b,
+            theme_id,
+            primary_only=True,
+            keys=evaluation_keys,
+        )
+        for theme_id in context.theme_ids
+    }
+    failed_release_gates = []
+    if evaluation_agreement["primary"]["rate"] < MINIMUM_PRIMARY_AGREEMENT:
+        failed_release_gates.append("primary-agreement")
+    if evaluation_agreement["exact_public_set"]["rate"] < MINIMUM_EXACT_PUBLIC_SET_AGREEMENT:
+        failed_release_gates.append("exact-public-set-agreement")
+    if min(item["f1"] for item in per_theme_primary_f1.values()) < MINIMUM_PER_THEME_PRIMARY_F1:
+        failed_release_gates.append("per-theme-primary-f1")
+    if min(item["f1"] for item in per_theme_public_f1.values()) < MINIMUM_PER_THEME_PUBLIC_F1:
+        failed_release_gates.append("per-theme-public-f1")
     return {
         "row_count": len(all_keys),
         "evaluation_row_count": len(evaluation_keys),
         "calibration_row_count": len(context.calibration_keys),
         "agreement": evaluation_agreement,
-        "per_theme_public_f1": {
-            theme_id: theme_f1(
-                pass_a,
-                pass_b,
-                theme_id,
-                primary_only=False,
-                keys=evaluation_keys,
-            )
-            for theme_id in context.theme_ids
-        },
-        "per_theme_primary_f1": {
-            theme_id: theme_f1(
-                pass_a,
-                pass_b,
-                theme_id,
-                primary_only=True,
-                keys=evaluation_keys,
-            )
-            for theme_id in context.theme_ids
+        "per_theme_public_f1": per_theme_public_f1,
+        "per_theme_primary_f1": per_theme_primary_f1,
+        "release_gate": {
+            "minimums": {
+                "primary_agreement": MINIMUM_PRIMARY_AGREEMENT,
+                "exact_public_set_agreement": MINIMUM_EXACT_PUBLIC_SET_AGREEMENT,
+                "per_theme_primary_f1": MINIMUM_PER_THEME_PRIMARY_F1,
+                "per_theme_public_f1": MINIMUM_PER_THEME_PUBLIC_F1,
+            },
+            "observed": {
+                "primary_agreement": evaluation_agreement["primary"]["rate"],
+                "exact_public_set_agreement": evaluation_agreement["exact_public_set"]["rate"],
+                "minimum_per_theme_primary_f1": min(
+                    item["f1"] for item in per_theme_primary_f1.values()
+                ),
+                "minimum_per_theme_public_f1": min(
+                    item["f1"] for item in per_theme_public_f1.values()
+                ),
+            },
+            "failed": failed_release_gates,
+            "passed": not failed_release_gates,
         },
         "full_set_descriptive_agreement": {
             "row_count": len(all_keys),
@@ -1018,6 +1085,95 @@ def normalize_adjudications(
     return adjudicator, by_key
 
 
+def load_identity_manifest(
+    paths: Iterable[Path],
+    context: Context,
+) -> frozenset[tuple[str, str]]:
+    keys: set[tuple[str, str]] = set()
+    for path in paths:
+        document = load_json(path)
+        require(isinstance(document, dict), f"{path} must contain an identity-manifest object")
+        require(
+            document.get("schema_version") == SCHEMA_VERSION
+            and document.get("kind") == "recalibration-keys",
+            f"{path} is not a Dream-theme v2 recalibration-key manifest",
+        )
+        rows = document.get("rows")
+        require(isinstance(rows, list), f"{path} rows must be an array")
+        for index, row in enumerate(rows):
+            require(
+                isinstance(row, dict) and set(row) == {"username", "created_time"},
+                f"{path} row[{index}] must contain only username and created_time",
+            )
+            key = source_key(row)
+            require(key in context.source_by_key, f"{path} contains unknown identity {key_label(key)}")
+            require(key not in keys, f"duplicate recalibration identity {key_label(key)}")
+            keys.add(key)
+    require(keys, "recalibration identity manifest cannot be empty")
+    return frozenset(keys)
+
+
+def build_reconsideration_audit(
+    pass_a_document: dict[str, Any],
+    baseline_pass_b_document: dict[str, Any],
+    calibrated_pass_b_document: dict[str, Any],
+    reconsidered_keys: frozenset[tuple[str, str]],
+    context: Context,
+) -> dict[str, Any]:
+    baseline_reviewer = baseline_pass_b_document["reviewer"]
+    calibrated_reviewer = calibrated_pass_b_document["reviewer"]
+    require(
+        baseline_reviewer["reviewer_id"] == calibrated_reviewer["reviewer_id"]
+        and baseline_reviewer["kind"] == calibrated_reviewer["kind"],
+        "baseline and calibrated pass B must belong to the same reviewer",
+    )
+    baseline_comparison = compare_passes(pass_a_document, baseline_pass_b_document, context)
+    expected_reconsidered = {
+        (item["username"], item["created_time"])
+        for item in baseline_comparison["required_adjudications"]
+        if "public-role-disagreement" in item["reasons"]
+    }
+    require(
+        set(reconsidered_keys) == expected_reconsidered,
+        "recalibration identity manifest must exactly match baseline public-role disagreements",
+    )
+
+    baseline_map = assignment_map(baseline_pass_b_document)
+    calibrated_map = assignment_map(calibrated_pass_b_document)
+    changed_keys = {
+        key
+        for key in baseline_map
+        if digest_json(baseline_map[key]) != digest_json(calibrated_map[key])
+    }
+    require(
+        changed_keys <= set(reconsidered_keys),
+        "calibrated pass B changed a judgment outside the declared reconsideration set",
+    )
+    for key in set(baseline_map) - set(reconsidered_keys):
+        require(
+            canonical_json(baseline_map[key]) == canonical_json(calibrated_map[key]),
+            f"non-reconsidered pass-B judgment changed for {key_label(key)}",
+        )
+
+    return {
+        "method": "targeted-calibrated-reconsideration-of-baseline-public-role-disagreements",
+        "baseline_pass_b": baseline_pass_b_document,
+        "baseline_pass_b_digest": digest_json(baseline_pass_b_document),
+        "calibrated_pass_b_digest": digest_json(calibrated_pass_b_document),
+        "baseline_comparison": baseline_comparison,
+        "reconsidered_identity_manifest": [
+            {"username": key[0], "created_time": key[1]}
+            for key in sorted_keys(reconsidered_keys)
+        ],
+        "changed_identity_manifest": [
+            {"username": key[0], "created_time": key[1]}
+            for key in sorted_keys(changed_keys)
+        ],
+        "reconsidered_row_count": len(reconsidered_keys),
+        "changed_row_count": len(changed_keys),
+    }
+
+
 def finalize_documents(
     pass_a_document: dict[str, Any],
     pass_b_document: dict[str, Any],
@@ -1025,9 +1181,24 @@ def finalize_documents(
     context: Context,
     adjudicator: dict[str, Any] | None,
     adjudications: dict[tuple[str, str], dict[str, Any]],
+    reconsideration_audit: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any]]:
+    release_gate = comparison.get("release_gate")
+    require(
+        isinstance(release_gate, dict) and release_gate.get("passed") is True,
+        f"agreement release gate failed: {release_gate.get('failed') if isinstance(release_gate, dict) else 'missing'}",
+    )
     pass_a = assignment_map(pass_a_document)
     pass_b = assignment_map(pass_b_document)
+    if adjudicator is not None:
+        pass_reviewer_ids = {
+            pass_a_document["reviewer"]["reviewer_id"],
+            pass_b_document["reviewer"]["reviewer_id"],
+        }
+        require(
+            adjudicator["reviewer_id"] not in pass_reviewer_ids,
+            "adjudicator reviewer_id must differ from both independent pass reviewers",
+        )
     required_by_key = {
         (item["username"], item["created_time"]): item["reasons"]
         for item in comparison["required_adjudications"]
@@ -1100,6 +1271,10 @@ def finalize_documents(
     assignments_document = {
         "schema_version": SCHEMA_VERSION,
         "taxonomy_version": TAXONOMY_VERSION,
+        "taxonomy_digest_algorithm": JUDGMENT_DIGEST_ALGORITHM,
+        "taxonomy_digest": context.taxonomy_digest,
+        "calibration_digest_algorithm": JUDGMENT_DIGEST_ALGORITHM,
+        "calibration_digest": context.calibration_digest,
         "supersedes": V1_ASSIGNMENTS_SUPERSEDES,
         "source_digest_algorithm": SOURCE_DIGEST_ALGORITHM,
         "source_row_count": len(context.source_rows),
@@ -1108,12 +1283,21 @@ def finalize_documents(
     review_document = {
         "schema_version": SCHEMA_VERSION,
         "taxonomy_version": TAXONOMY_VERSION,
+        "taxonomy_digest_algorithm": JUDGMENT_DIGEST_ALGORITHM,
+        "taxonomy_digest": context.taxonomy_digest,
+        "calibration_digest_algorithm": JUDGMENT_DIGEST_ALGORITHM,
+        "calibration_digest": context.calibration_digest,
+        "calibration_identity_manifest": [
+            {"username": key[0], "created_time": key[1]}
+            for key in sorted_keys(context.calibration_keys)
+        ],
         "supersedes": V1_REVIEW_SUPERSEDES,
         "review_method": "two-full-coverage-independent-passes-with-calibrated-reconsideration",
         "source_digest_algorithm": SOURCE_DIGEST_ALGORITHM,
         "judgment_digest_algorithm": JUDGMENT_DIGEST_ALGORITHM,
         "source_row_count": len(context.source_rows),
         "blind_passes": [pass_a_document, pass_b_document],
+        "calibrated_reconsideration": reconsideration_audit,
         "comparison": comparison,
         "adjudicator": adjudicator,
         "adjudications": normalized_adjudications,
@@ -1199,6 +1383,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--pass-a", type=Path, help="complete blind pass A JSON")
     parser.add_argument("--pass-b", type=Path, nargs="+", help="one or more blind pass B JSON batches")
+    parser.add_argument(
+        "--pass-b-baseline",
+        type=Path,
+        nargs="+",
+        help="one or more complete pre-calibration pass B JSON batches",
+    )
+    parser.add_argument(
+        "--reconsidered-keys",
+        type=Path,
+        nargs="+",
+        help="identity manifests for the targeted calibrated reconsideration",
+    )
     parser.add_argument("--adjudications", type=Path, help="optional adjudication decisions JSON")
     parser.add_argument("--comparison-output", type=Path, help="comparison or adjudication-packet JSON path")
     parser.add_argument(
@@ -1226,6 +1422,21 @@ def run(args: argparse.Namespace) -> int:
         pass_a_document["reviewer"]["reviewer_id"] != pass_b_document["reviewer"]["reviewer_id"],
         "blind passes must use different reviewer IDs",
     )
+    require(
+        bool(args.pass_b_baseline) == bool(args.reconsidered_keys),
+        "--pass-b-baseline and --reconsidered-keys must be supplied together",
+    )
+    reconsideration_audit = None
+    if args.pass_b_baseline:
+        baseline_pass_b_document = normalize_pass_files(args.pass_b_baseline, "pass-b", context)
+        reconsidered_keys = load_identity_manifest(args.reconsidered_keys, context)
+        reconsideration_audit = build_reconsideration_audit(
+            pass_a_document,
+            baseline_pass_b_document,
+            pass_b_document,
+            reconsidered_keys,
+            context,
+        )
     comparison = compare_passes(pass_a_document, pass_b_document, context)
     comparison_path = args.comparison_output or args.output_dir / "dream_theme_v2_comparison.json"
 
@@ -1243,6 +1454,10 @@ def run(args: argparse.Namespace) -> int:
     adjudications: dict[tuple[str, str], dict[str, Any]] = {}
     if args.adjudications is not None:
         adjudicator, adjudications = normalize_adjudications(args.adjudications, context)
+    require(
+        reconsideration_audit is not None,
+        "final production artifacts require baseline pass B and reconsidered-key provenance",
+    )
 
     assignments_document, review_document = finalize_documents(
         pass_a_document,
@@ -1251,6 +1466,7 @@ def run(args: argparse.Namespace) -> int:
         context,
         adjudicator,
         adjudications,
+        reconsideration_audit,
     )
     comparison_document = {
         "schema_version": SCHEMA_VERSION,

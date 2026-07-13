@@ -30,7 +30,7 @@
       "label": "Service",
       "color": "#404040",
       "description": "Dreams of directly helping, healing, teaching, advocating for, or materially supporting people, communities, or animals.",
-      "classification_guidance": "Use when direct help, care, repair, teaching, advocacy, or material support is a stated purpose. Do not infer Service from a helping profession, beneficiary, or caring personality when the help is not part of the aspiration."
+      "classification_guidance": "Use when direct help, care, repair, teaching for recipient wellbeing or access, advocacy, or material support is a stated purpose. Do not infer Service from a helping profession, beneficiary, or caring personality when the help is not part of the aspiration. Teaching whose stated end is carrying knowledge or skill outward is Transmission instead."
     },
     {
       "order": 4,
@@ -62,7 +62,7 @@
       "label": "Transmission",
       "color": "#737373",
       "description": "Dreams of carrying knowledge, art, story, skill, culture, or legacy outward to others or forward to another generation.",
-      "classification_guidance": "Use when an audience or recipient is explicit through teaching, publishing, performing, sharing, communicating, influencing, or carrying a legacy. Private making, study, or research alone is Cultivation rather than Transmission."
+      "classification_guidance": "Use when an audience or recipient is explicit through teaching that carries knowledge or skill outward, publishing, performing, sharing, communicating, influencing, or carrying a legacy. Private making, study, or research alone is Cultivation rather than Transmission; teaching centered on recipient care, access, or wellbeing is Service instead."
     }
   ],
   "roles": [
@@ -178,6 +178,8 @@
     "Prefer the desired end over the means used to obtain it. Money so the respondent can travel supports Freedom unless material security is also an independent desired end.",
     "Money, wealth, fame, luxury, recognition, and status do not establish Self-Sufficiency unless the response explicitly connects them to security, needs, stability, or reduced dependence.",
     "Bare Freedom is specific enough for Freedom. Bare stability, security, success, impact, love, or legacy requires a material, relational, or action domain before it can establish a theme.",
+    "A single teaching or education clause cannot count as both Service and Transmission. Choose Service when the desired end is recipient care, access, healing, advocacy, or wellbeing; choose Transmission when the desired end is carrying knowledge, art, story, culture, or skill outward. Only separately stated ends may support both themes.",
+    "Distinguish Stewardship from Transmission by what continues. Stewardship maintains responsibility for land, resources, an institution, family wellbeing, or community infrastructure; Transmission passes knowledge, art, story, culture, skill, or a named legacy onward. Asking others to continue the respondent's dream or legacy is Transmission unless the respondent separately takes durable responsibility for the institution, resource, family, or community involved.",
     "An exact excerpt from the verbatim response is required for every primary, co-dominant, and supporting classification.",
     "Record plausible adjacent themes that were rejected and state whether they were merely inferred, a means, a setting, a beneficiary, a consequence, or better explained by another theme.",
     "Peace, rest, recovery, recognition, status, happiness, and literal sleep dreams remain publicly unthemed unless a surrounding aspiration independently establishes one of the seven themes."
@@ -187,6 +189,8 @@
     "Freedom versus Self-Sufficiency",
     "Cultivation versus Stewardship",
     "Service versus Stewardship",
-    "Cultivation versus Transmission"
+    "Cultivation versus Transmission",
+    "Service versus Transmission",
+    "Stewardship versus Transmission"
   ]
 }
