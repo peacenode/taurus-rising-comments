@@ -1,0 +1,192 @@
+{
+  "schema_version": 2,
+  "taxonomy_version": 2,
+  "supersedes": {
+    "taxonomy_version": 1,
+    "path": "data/dream_themes.json",
+    "sha256": "331c0e69cd2aea44abf1b8bcc665093c258c0e50ceafa28fde3af7e3e4903590"
+  },
+  "classification_model": "dominant-outcomes",
+  "themes": [
+    {
+      "order": 1,
+      "id": "home-belonging",
+      "label": "Home / Belonging",
+      "color": "#171717",
+      "description": "Dreams of a safe home base and reciprocal belonging with family, a partner, friends, or community.",
+      "classification_guidance": "Use when sanctuary, rootedness, reciprocal love, family, friendship, or community is itself a desired outcome. Owning a house or land without relational or rooted language is not enough."
+    },
+    {
+      "order": 2,
+      "id": "cultivation",
+      "label": "Cultivation",
+      "color": "#a3a3a3",
+      "description": "Dreams of growing or tending land, food, a creative practice, study, a business, or a way of life over time.",
+      "classification_guidance": "Use when making, growing, learning, practicing, building, or tending is itself a desired ongoing practice. A creative job, business, homestead, or piece of land does not establish Cultivation unless the process matters explicitly."
+    },
+    {
+      "order": 3,
+      "id": "service",
+      "label": "Service",
+      "color": "#404040",
+      "description": "Dreams of directly helping, healing, teaching, advocating for, or materially supporting people, communities, or animals.",
+      "classification_guidance": "Use when direct help, care, repair, teaching, advocacy, or material support is a stated purpose. Do not infer Service from a helping profession, beneficiary, or caring personality when the help is not part of the aspiration."
+    },
+    {
+      "order": 4,
+      "id": "freedom",
+      "label": "Freedom",
+      "color": "#d4d4d4",
+      "description": "Dreams of autonomy over movement, time, place, identity, or the terms of work and daily life.",
+      "classification_guidance": "Use when mobility, travel, release, independence, time autonomy, or authentic self-direction is itself desired. Money or stability that merely enables another outcome is not automatically Freedom."
+    },
+    {
+      "order": 5,
+      "id": "stewardship",
+      "label": "Stewardship",
+      "color": "#525252",
+      "description": "Dreams of taking durable responsibility for land, resources, institutions, family wellbeing, or community continuity.",
+      "classification_guidance": "Use when durable responsibility beyond the self is explicit: caring for land, resources, an institution, family wellbeing, or community continuity over time. The presence of land, animals, or children alone is not enough."
+    },
+    {
+      "order": 6,
+      "id": "self-sufficiency",
+      "label": "Self-Sufficiency",
+      "color": "#e5e5e5",
+      "description": "Dreams of a dependable material base—income, health, home, land, or food—that reduces survival pressure and reliance on unstable systems.",
+      "classification_guidance": "Use when financial security, stable work, health, housing, land, food, or another dependable material foundation is itself desired. Do not assign it when money or property appears only as a means to another stated outcome."
+    },
+    {
+      "order": 7,
+      "id": "transmission",
+      "label": "Transmission",
+      "color": "#737373",
+      "description": "Dreams of carrying knowledge, art, story, skill, culture, or legacy outward to others or forward to another generation.",
+      "classification_guidance": "Use when an audience or recipient is explicit through teaching, publishing, performing, sharing, communicating, influencing, or carrying a legacy. Private making, study, or research alone is Cultivation rather than Transmission."
+    }
+  ],
+  "roles": [
+    {
+      "id": "primary",
+      "public": true,
+      "display_on_response": true,
+      "counts_in_pie": true,
+      "minimum_per_themed_response": 1,
+      "maximum_per_response": 1,
+      "description": "The single clearest end-state at the center of the response."
+    },
+    {
+      "id": "co-dominant",
+      "public": true,
+      "display_on_response": true,
+      "counts_in_pie": false,
+      "minimum_per_response": 0,
+      "maximum_per_response": 2,
+      "description": "A separate stand-alone aspiration of comparable emphasis, supported by its own clause."
+    },
+    {
+      "id": "supporting",
+      "public": false,
+      "display_on_response": false,
+      "counts_in_pie": false,
+      "minimum_per_response": 0,
+      "maximum_per_response": null,
+      "description": "A means, setting, beneficiary, consequence, or weaker signal that helps explain a public theme but is not independently dominant."
+    }
+  ],
+  "score_dimensions": [
+    {
+      "id": "explicit_support",
+      "description": "The theme is stated in the verbatim response rather than inferred.",
+      "anchors": {
+        "0": "No direct support; the theme would have to be inferred from context or a noun alone.",
+        "1": "The response suggests the theme, but the desired outcome is ambiguous or indirect.",
+        "2": "An exact verbatim clause directly establishes the theme as something the respondent wants."
+      }
+    },
+    {
+      "id": "centrality",
+      "description": "The theme is central to what the respondent wants, not incidental context.",
+      "anchors": {
+        "0": "Incidental context, biography, or a detail outside the stated dream.",
+        "1": "Relevant to the dream but secondary to a clearer desired outcome.",
+        "2": "A central end-state the respondent explicitly foregrounds or independently enumerates."
+      }
+    },
+    {
+      "id": "standalone",
+      "description": "The aspiration still establishes this theme if the response's other dream clauses are removed.",
+      "anchors": {
+        "0": "The signal disappears when its enabling or surrounding clause is removed.",
+        "1": "The signal is meaningful but depends partly on another outcome, setting, or beneficiary.",
+        "2": "Its own exact evidence clause remains a complete, independently meaningful aspiration."
+      }
+    },
+    {
+      "id": "specificity",
+      "description": "This theme explains the evidence better than an adjacent theme does.",
+      "anchors": {
+        "0": "Another theme clearly explains the same evidence better.",
+        "1": "The evidence sits on a documented boundary and either theme remains plausible.",
+        "2": "The wording distinctly matches this theme and not a documented adjacent theme."
+      }
+    }
+  ],
+  "score_scale": {
+    "minimum_per_dimension": 0,
+    "maximum_per_dimension": 2,
+    "primary_minimum_total": 7,
+    "co_dominant_minimum_total": 6,
+    "supporting_minimum_total": 4
+  },
+  "evidence_policy": {
+    "source_field": "text",
+    "offset_unit": "unicode-code-point",
+    "interval": "zero-based-half-open",
+    "quote_must_match": true,
+    "minimum_spans_per_classification": 1
+  },
+  "confidence_values": [
+    "high",
+    "medium",
+    "low"
+  ],
+  "confidence_policy": [
+    {
+      "id": "high",
+      "rule": "The public role qualifies, has a total score of 8 for primary or at least 7 for co-dominant, and has no unresolved boundary ambiguity."
+    },
+    {
+      "id": "medium",
+      "rule": "The public role qualifies but uses the minimum score, or one documented boundary requires judgment."
+    },
+    {
+      "id": "low",
+      "rule": "The candidate remains provisional because evidence, centrality, standalone status, or specificity is uncertain; a low-confidence candidate cannot be published without explicit adjudication."
+    }
+  ],
+  "shared_boundaries": [
+    "Classify the verbatim response text; the Dreams summary may help navigation but cannot override the source text.",
+    "A candidate must be a current first-person aspiration. Do not classify hardship, biography, present occupation, astrology, lessons, people attracted, another person's goal, a negated goal, or a past or abandoned dream.",
+    "A public theme must describe a dominant desired outcome, not merely a mechanism, setting, beneficiary, consequence, or inferred facet.",
+    "Choose exactly one primary theme when any candidate scores at least 7. Leave the response publicly unthemed when none reaches 7.",
+    "When eligible primary candidates tie, choose the theme with the earliest separate evidence clause in the verbatim response. If the same clause supports both, prefer the more specific theme; if that also ties, use taxonomy order. A remaining eligible tied outcome may be co-dominant.",
+    "Add a co-dominant theme only when it has a separate evidence clause, scores at least 6, and is within one point of the primary score.",
+    "A candidate scoring 6 or more may remain supporting when it is a means, setting, beneficiary, consequence, or lacks a separate stand-alone clause; score alone never makes a theme public.",
+    "Publish no more than two themes by default. A third requires three separately stated aspirations, a score of at least 7 for each, and explicit adjudication. Never publish four or more themes.",
+    "One noun cannot inflate into several themes. A house, homestead, farm, job, business, creative practice, family, or trip establishes only what the surrounding clause explicitly makes important.",
+    "Prefer the desired end over the means used to obtain it. Money so the respondent can travel supports Freedom unless material security is also an independent desired end.",
+    "Money, wealth, fame, luxury, recognition, and status do not establish Self-Sufficiency unless the response explicitly connects them to security, needs, stability, or reduced dependence.",
+    "Bare Freedom is specific enough for Freedom. Bare stability, security, success, impact, love, or legacy requires a material, relational, or action domain before it can establish a theme.",
+    "An exact excerpt from the verbatim response is required for every primary, co-dominant, and supporting classification.",
+    "Record plausible adjacent themes that were rejected and state whether they were merely inferred, a means, a setting, a beneficiary, a consequence, or better explained by another theme.",
+    "Peace, rest, recovery, recognition, status, happiness, and literal sleep dreams remain publicly unthemed unless a surrounding aspiration independently establishes one of the seven themes."
+  ],
+  "difficult_boundaries": [
+    "Home / Belonging versus Self-Sufficiency",
+    "Freedom versus Self-Sufficiency",
+    "Cultivation versus Stewardship",
+    "Service versus Stewardship",
+    "Cultivation versus Transmission"
+  ]
+}
