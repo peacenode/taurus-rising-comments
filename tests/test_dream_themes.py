@@ -331,6 +331,11 @@ class DreamThemeRenderTests(unittest.TestCase):
             )
             self.assertRegex(chart, chart_pattern)
             self.assertIn(f'background:rgba(225,29,72,{opacity})', legend)
+        self.assertIn(
+            '<span class="text-sm font-medium">Freedom '
+            '<span class="text-neutral-950/50">3.4%</span></span>',
+            legend,
+        )
 
 
 class ProductionDreamThemeTests(unittest.TestCase):

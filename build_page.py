@@ -291,12 +291,14 @@ def render_dream_theme_pie(summary):
         description = html_lib.escape(theme["description"])
         theme_id = html_lib.escape(theme["id"])
         opacity = opacity_by_theme[theme["id"]]
+        percent = theme["percentage"]
+        percent_text = "0%" if percent == 0 else f"{percent:.1f}%"
         legend.append(f'''
         <li class="border-t border-neutral-200 py-1 first:border-t-0 first:pt-0">
           <button type="button" data-dream-theme="{theme_id}" aria-pressed="false" aria-controls="list"
             class="dream-theme-option grid w-full grid-cols-[0.75rem_1fr] gap-x-2.5 gap-y-1 rounded-lg px-2 py-3 text-left transition-colors hover:bg-neutral-950/[0.03] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 aria-pressed:bg-neutral-950/[0.04]">
             <span class="mt-1 block size-3 rounded-sm" style="background:rgba({DREAM_THEME_CHART_RGB},{opacity:.3f})"></span>
-            <span class="text-sm font-medium">{label}</span>
+            <span class="text-sm font-medium">{label} <span class="text-neutral-950/50">{percent_text}</span></span>
             <span class="col-start-2 text-xs leading-relaxed text-neutral-500">{description}</span>
           </button>
         </li>''')
