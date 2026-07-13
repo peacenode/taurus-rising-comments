@@ -1,0 +1,371 @@
+{
+  "schema_version": 2,
+  "taxonomy_version": 2,
+  "protocol_note": "Calibration rows are excluded from blind agreement metrics.",
+  "rows": [
+    {
+      "username": "hiitsmels_",
+      "created_time": "2026-07-10T00:27:28",
+      "category": "obvious-single",
+      "expected_primary_theme_id": "home-belonging",
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["I want community."],
+      "decision": "Community is the explicit desired relational outcome; volunteering and the book club are context."
+    },
+    {
+      "username": "strawhatibby",
+      "created_time": "2026-07-08T17:51:55",
+      "category": "obvious-single",
+      "expected_primary_theme_id": "home-belonging",
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["My dream is to have friends and community, and lasting relationships."],
+      "decision": "The response directly centers reciprocal friendship, community, and lasting relationships."
+    },
+    {
+      "username": "user983949695",
+      "created_time": "2026-07-09T22:06:23",
+      "category": "obvious-single",
+      "expected_primary_theme_id": "cultivation",
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["I want to be a full time painter."],
+      "decision": "Full-time painting establishes an ongoing creative practice without an audience outcome."
+    },
+    {
+      "username": "ebieboo7",
+      "created_time": "2026-07-09T15:24:13",
+      "category": "obvious-single",
+      "expected_primary_theme_id": "cultivation",
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["my dream is to have a dessert pastry shop"],
+      "decision": "The pastry shop is an explicitly desired ongoing making and business practice."
+    },
+    {
+      "username": "edweenuh",
+      "created_time": "2026-07-08T22:08:06",
+      "category": "obvious-single",
+      "expected_primary_theme_id": "service",
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["my passion is helping people and doing humanitarian work"],
+      "decision": "Direct help and humanitarian work are explicit; the luxury objects do not establish self-sufficiency."
+    },
+    {
+      "username": "strange_lady333",
+      "created_time": "2026-07-10T13:17:06",
+      "category": "obvious-single",
+      "expected_primary_theme_id": "freedom",
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["Dream: To travel and see the world."],
+      "decision": "Travel and seeing the world directly establish movement autonomy."
+    },
+    {
+      "username": "inspiretobeher",
+      "created_time": "2026-07-09T00:15:14",
+      "category": "obvious-single",
+      "expected_primary_theme_id": "freedom",
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["My dream is to travel the world alone and enjoy my freedom"],
+      "decision": "The response explicitly foregrounds independent travel and freedom."
+    },
+    {
+      "username": "barb58193",
+      "created_time": "2026-07-09T23:33:35",
+      "category": "obvious-single",
+      "expected_primary_theme_id": "stewardship",
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["Dream is to look after family."],
+      "decision": "Looking after family states durable responsibility for family wellbeing."
+    },
+    {
+      "username": "votresara",
+      "created_time": "2026-07-08T16:55:13",
+      "category": "obvious-single",
+      "expected_primary_theme_id": "stewardship",
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["I just want to have done well enough to take care of me and mine and get to a point of being able to build a longer table."],
+      "decision": "The sustained horizon is family and household wellbeing, extending toward community continuity."
+    },
+    {
+      "username": "karasuko27",
+      "created_time": "2026-07-09T15:48:50",
+      "category": "obvious-single",
+      "expected_primary_theme_id": "self-sufficiency",
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["all I want is financial stability, a stable job🫠"],
+      "decision": "Financial stability and stable work directly establish a dependable material base."
+    },
+    {
+      "username": "nickramosfd",
+      "created_time": "2026-07-08T22:26:21",
+      "category": "obvious-single",
+      "expected_primary_theme_id": "self-sufficiency",
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["financial stability would be the biggest dream atm."],
+      "decision": "The material domain makes stability specific and explicitly central."
+    },
+    {
+      "username": "elpidakourkouta",
+      "created_time": "2026-07-09T17:35:13",
+      "category": "obvious-single",
+      "expected_primary_theme_id": "transmission",
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["My dream is to be able to share what I have in my soul through art, writing, public speaking etc. and people not only to want to receive it, but to get truly touched from it!"],
+      "decision": "Sharing creative expression with recipients and affecting them is the desired outcome."
+    },
+    {
+      "username": "barbiexellie",
+      "created_time": "2026-07-09T17:02:37",
+      "category": "obvious-single",
+      "expected_primary_theme_id": "transmission",
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["I sing and I dance and I can act and I want to share it with the world."],
+      "decision": "The existing creative practices are context; sharing them with the world is the dream."
+    },
+    {
+      "username": "bellowing_tulip",
+      "created_time": "2026-07-10T09:21:24",
+      "category": "genuine-co-dominant",
+      "expected_primary_theme_id": "freedom",
+      "expected_co_dominant_theme_ids": ["self-sufficiency"],
+      "evidence_quotes": ["I dream of being free, financially stable, able to roam and return to a secure home."],
+      "decision": "Movement autonomy and a dependable financial and housing base are separately enumerated outcomes."
+    },
+    {
+      "username": "w1nt3r_2n0w",
+      "created_time": "2026-07-10T06:10:05",
+      "category": "genuine-co-dominant",
+      "expected_primary_theme_id": "self-sufficiency",
+      "expected_co_dominant_theme_ids": ["home-belonging"],
+      "evidence_quotes": ["My only dream is to be able to live comfortably and get married to my partner."],
+      "decision": "Material comfort and committed partnership each remain meaningful when the other is removed."
+    },
+    {
+      "username": "kaykittles",
+      "created_time": "2026-07-10T02:01:44",
+      "category": "genuine-co-dominant",
+      "expected_primary_theme_id": "cultivation",
+      "expected_co_dominant_theme_ids": ["service"],
+      "evidence_quotes": ["My dream is to have a flower farm and do reiki there and run grief and healing circles."],
+      "decision": "The flower-growing practice and direct healing work are both explicit desired outcomes."
+    },
+    {
+      "username": "cronchycat_",
+      "created_time": "2026-07-10T00:35:12",
+      "category": "genuine-co-dominant",
+      "expected_primary_theme_id": "service",
+      "expected_co_dominant_theme_ids": ["stewardship"],
+      "evidence_quotes": ["My dream would be to able to be rich enough to help animals and people in need and have my family continue my dream for generations."],
+      "decision": "Direct aid is primary; explicit intergenerational continuation independently establishes stewardship."
+    },
+    {
+      "username": "lj_blackhardt",
+      "created_time": "2026-07-09T02:41:42",
+      "category": "genuine-co-dominant",
+      "expected_primary_theme_id": "cultivation",
+      "expected_co_dominant_theme_ids": ["freedom", "transmission"],
+      "evidence_quotes": [
+        "I want to create a movie. I want to tell a story.",
+        "I wanna put it out there. I want people to see it",
+        "I would love to travel and create travel and create travel and create."
+      ],
+      "decision": "This is a calibrated three-theme exception with separate making, audience, and travel aspirations."
+    },
+    {
+      "username": "smolcaro",
+      "created_time": "2026-07-08T18:01:09",
+      "category": "genuine-co-dominant",
+      "expected_primary_theme_id": "home-belonging",
+      "expected_co_dominant_theme_ids": ["service"],
+      "evidence_quotes": [
+        "i just want a slow life with the person i love the most",
+        "i want chickens and a cozy home and kids but i also wanna be a therapist or counselor"
+      ],
+      "decision": "Relational home and family are central, with a separate direct-healing career aspiration."
+    },
+    {
+      "username": "17degt",
+      "created_time": "2026-07-09T20:12:17",
+      "category": "genuine-co-dominant",
+      "expected_primary_theme_id": "home-belonging",
+      "expected_co_dominant_theme_ids": ["stewardship"],
+      "evidence_quotes": ["My dream life would be to run some type of 3rd space that feels like home for people to connect with others, build found family/community and feel safe showing up as their truest selves."],
+      "decision": "The third space directly creates belonging and also establishes durable community infrastructure."
+    },
+    {
+      "username": "rodion.ratio",
+      "created_time": "2026-07-09T11:02:40",
+      "category": "genuine-co-dominant",
+      "expected_primary_theme_id": "freedom",
+      "expected_co_dominant_theme_ids": ["stewardship"],
+      "evidence_quotes": ["i’ve been dreaming about moving abroad, to live my life to the fullest without having to worry about income, and to bring an upgrade to my parents’ living conditions."],
+      "decision": "Moving abroad is the central autonomy outcome; improving parents' living conditions is a separate durable family commitment."
+    },
+    {
+      "username": "sweetladysleeze",
+      "created_time": "2026-07-08T13:53:31",
+      "category": "genuine-co-dominant",
+      "expected_primary_theme_id": "freedom",
+      "expected_co_dominant_theme_ids": ["service", "stewardship"],
+      "evidence_quotes": [
+        "My dream is to structure my life so I can do whatever I want outside of capitalism and help build a new world alongside my community.",
+        "My dream is to help people set themselves free."
+      ],
+      "decision": "This is a calibrated three-theme exception: personal autonomy, durable community-building, and direct help are each explicit."
+    },
+    {
+      "username": "eiramaras",
+      "created_time": "2026-07-08T14:45:34",
+      "category": "genuine-co-dominant",
+      "expected_primary_theme_id": "cultivation",
+      "expected_co_dominant_theme_ids": ["self-sufficiency"],
+      "evidence_quotes": ["the dream would be to make a living wage as an artist (able to live comfortably, slowly and just create)."],
+      "decision": "The dual-headed construction comparably elaborates creative practice and a dependable living wage."
+    },
+    {
+      "username": "jae.241301",
+      "created_time": "2026-07-12T02:44:11",
+      "category": "unthemed",
+      "expected_primary_theme_id": null,
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["my dream is to be happy"],
+      "decision": "Happiness is a mood without a taxonomy domain."
+    },
+    {
+      "username": "mello_money",
+      "created_time": "2026-07-11T02:49:58",
+      "category": "unthemed",
+      "expected_primary_theme_id": null,
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["What do I want? PEACE."],
+      "decision": "Peace alone does not establish one of the seven themes."
+    },
+    {
+      "username": "kpandeli",
+      "created_time": "2026-07-10T14:22:48",
+      "category": "unthemed",
+      "expected_primary_theme_id": null,
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["Dreams: hmmm 🤔"],
+      "decision": "No current aspiration is stated."
+    },
+    {
+      "username": "elunegeloj",
+      "created_time": "2026-07-10T13:38:48",
+      "category": "unthemed",
+      "expected_primary_theme_id": null,
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["no dreams, adhd keeps me changing goals every few days 😂😂😂"],
+      "decision": "The response explicitly says there is no fixed current dream."
+    },
+    {
+      "username": "shannaw987",
+      "created_time": "2026-07-08T13:04:20",
+      "category": "unthemed",
+      "expected_primary_theme_id": null,
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["I don't really have dreams anymore."],
+      "decision": "The response explicitly states the absence of current dreams."
+    },
+    {
+      "username": "destenylazo6",
+      "created_time": "2026-07-08T16:52:25",
+      "category": "unthemed",
+      "expected_primary_theme_id": null,
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["Dreams about exes also being trapped in school or being yelled at in school."],
+      "decision": "This is literal sleep-dream content rather than a desired life outcome."
+    },
+    {
+      "username": "astralrayneshop",
+      "created_time": "2026-07-10T13:53:58",
+      "category": "unthemed",
+      "expected_primary_theme_id": null,
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["venus 7th house, North node 7th, Saturn 11th"],
+      "decision": "The response contains placements only and no aspiration."
+    },
+    {
+      "username": "wakingribbons",
+      "created_time": "2026-07-09T17:48:43",
+      "category": "difficult-boundary",
+      "expected_primary_theme_id": null,
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": [
+        "I grew up dreaming of being a writer but that's all I really cared about.",
+        "Now, I just want to feel stable."
+      ],
+      "decision": "Writing is explicitly past; current stability lacks a material or relational domain."
+    },
+    {
+      "username": "andrezzajb",
+      "created_time": "2026-07-09T05:45:30",
+      "category": "difficult-boundary",
+      "expected_primary_theme_id": null,
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["dream is recognition for the art i absolutely dont share"],
+      "decision": "Recognition is status, and the response explicitly negates outward transmission."
+    },
+    {
+      "username": "maya_minx",
+      "created_time": "2026-07-09T10:01:52",
+      "category": "difficult-boundary",
+      "expected_primary_theme_id": "freedom",
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": ["My dream is to honestly be financially free so I can do whatever I want whenever I want like traveling or affording certain things."],
+      "decision": "The purpose construction makes money the means and autonomy over time and movement the endpoint."
+    },
+    {
+      "username": "princessjas95",
+      "created_time": "2026-07-09T11:21:01",
+      "category": "difficult-boundary",
+      "expected_primary_theme_id": "cultivation",
+      "expected_co_dominant_theme_ids": [],
+      "evidence_quotes": [
+        "My dream is to create art and just express my creativity.",
+        "I just want stability and consistency 🥲"
+      ],
+      "decision": "Creative practice is concrete; later stability is emotionally contextual and materially unspecified."
+    },
+    {
+      "username": "leavemial0ne.pls",
+      "created_time": "2026-07-09T12:38:05",
+      "category": "difficult-boundary",
+      "expected_primary_theme_id": "self-sufficiency",
+      "expected_co_dominant_theme_ids": ["home-belonging"],
+      "evidence_quotes": ["I definitely dream of having my own home and moving freely in it and making it as comfy as I can for myself and my partner and cats"],
+      "decision": "Physical home ownership anchors self-sufficiency; the separately coordinated partner-and-cats sanctuary establishes belonging."
+    },
+    {
+      "username": "thatforagingwitchlady",
+      "created_time": "2026-07-09T06:48:29",
+      "category": "difficult-boundary",
+      "expected_primary_theme_id": "cultivation",
+      "expected_co_dominant_theme_ids": ["transmission"],
+      "evidence_quotes": ["my dream though, which is to have enough land to grow a food forest, and teach people about native plants and foraging."],
+      "decision": "Growing the food forest is cultivation; teaching plant and foraging knowledge is distinct transmission, not stewardship."
+    },
+    {
+      "username": "chantel.beauty",
+      "created_time": "2026-07-08T18:42:37",
+      "category": "difficult-boundary",
+      "expected_primary_theme_id": "self-sufficiency",
+      "expected_co_dominant_theme_ids": ["service"],
+      "evidence_quotes": [
+        "Dreams lol to have a stable, well paying freaking job.",
+        "I like to help, I want to help others around me"
+      ],
+      "decision": "Stable work is primary, while the repeated explicit wish to help independently qualifies as service."
+    },
+    {
+      "username": "capmoon44",
+      "created_time": "2026-07-10T13:51:42",
+      "category": "difficult-boundary",
+      "expected_primary_theme_id": "home-belonging",
+      "expected_co_dominant_theme_ids": ["freedom"],
+      "evidence_quotes": [
+        "a quiet place a can call my own, close to nature, close to a city, that's beautiful and peaceful.",
+        "the knowing that I am somewhere where I have time and safety, and I can just be."
+      ],
+      "decision": "The safe sanctuary is primary; explicit time and space autonomy is co-dominant, without a dependable material-base claim."
+    }
+  ]
+}
