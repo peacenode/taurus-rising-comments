@@ -611,7 +611,7 @@ class DreamThemeRenderTests(unittest.TestCase):
     def test_single_theme_renders_a_full_circle_and_percentage_label(self):
         markup = build_page.render_dream_theme_pie(render_summary([3, 0, 0, 0, 0, 0, 0]))
         self.assertIn(
-            '<circle cx="160" cy="160" r="128" fill="#e11d48" fill-opacity="1.000"',
+            '<circle cx="160" cy="160" r="106" fill="#e11d48" fill-opacity="1.000"',
             markup,
         )
         self.assertNotIn('<path d="M 160 160', markup)
@@ -620,19 +620,23 @@ class DreamThemeRenderTests(unittest.TestCase):
             markup,
         )
         self.assertIn("Home / Belonging: 3 primary responses, 100.0%", markup)
-        self.assertIn("100%</text>", markup)
+        self.assertIn("100.0%</text>", markup)
+        self.assertEqual(markup.count('class="dream-theme-leader"'), 1)
         self.assertEqual(markup.count('class="dream-theme-option'), 7)
 
-    def test_percentage_labels_are_centered_in_each_slice_without_backgrounds(self):
+    def test_exact_percentage_labels_sit_outside_with_leader_lines(self):
         markup = build_page.render_dream_theme_pie(render_summary([1, 1, 0, 0, 0, 0, 0]))
-        self.assertNotIn("<line ", markup)
         self.assertNotIn("<rect ", markup)
+        self.assertEqual(markup.count('class="dream-theme-leader"'), 2)
         self.assertEqual(markup.count('class="dream-theme-percent"'), 2)
         self.assertEqual(markup.count('fill-opacity="0.5"'), 2)
+        self.assertEqual(markup.count('stroke-opacity="0.5"'), 2)
         self.assertNotIn('stroke="#a3a3a3"', markup)
-        self.assertIn('<text x="214.325" y="160.500"', markup)
-        self.assertIn('<text x="105.675" y="160.500"', markup)
-        self.assertEqual(markup.count("50%</text>"), 2)
+        self.assertIn('<line x1="269.000" y1="160.000" x2="286.000" y2="160.000"', markup)
+        self.assertIn('<line x1="51.000" y1="160.000" x2="34.000" y2="160.000"', markup)
+        self.assertIn('<text x="300.000" y="160.500"', markup)
+        self.assertIn('<text x="20.000" y="160.500"', markup)
+        self.assertEqual(markup.count("50.0%</text>"), 2)
         self.assertIn(
             'aria-label="Select primary theme Home / Belonging: 50.0%, 1 primary response"',
             markup,
@@ -650,10 +654,11 @@ class DreamThemeRenderTests(unittest.TestCase):
         self.assertEqual(markup.count('class="dream-theme-slice'), 7)
         self.assertEqual(markup.count("focus:outline-none focus-visible:outline"), 7)
         self.assertEqual(markup.count("[-webkit-tap-highlight-color:transparent]"), 7)
+        self.assertEqual(markup.count('class="dream-theme-leader"'), 7)
+        self.assertEqual(markup.count('data-dream-theme-line="'), 7)
         self.assertEqual(markup.count('class="dream-theme-percent"'), 7)
         self.assertEqual(markup.count('data-dream-theme-percent="'), 7)
-        self.assertEqual(markup.count('fill="#000000" fill-opacity="0.5"'), 4)
-        self.assertEqual(markup.count('fill="#ffffff" fill-opacity="0.5"'), 3)
+        self.assertEqual(markup.count('fill="#000000" fill-opacity="0.5"'), 7)
         self.assertNotIn("group-aria-pressed:ring", markup)
         self.assertNotIn("size-3", markup)
         self.assertNotIn("dream-theme-number", markup)
@@ -973,7 +978,11 @@ class ProductionDreamThemeTests(unittest.TestCase):
             self.html,
         )
         self.assertIn(
-            'label.setAttribute("fill", selected ? "#ffffff" : label.dataset.chartTextColor)',
+            'label.setAttribute("fill", selected ? "#e11d48" : label.dataset.chartTextColor)',
+            self.html,
+        )
+        self.assertIn(
+            'line.setAttribute("stroke-opacity", selected ? "1" : line.dataset.chartLineOpacity)',
             self.html,
         )
         self.assertNotIn('? "0.28" : "1"', self.html)
@@ -983,7 +992,7 @@ class ProductionDreamThemeTests(unittest.TestCase):
         expected = [
             ("const filters =", "const chipDef =", "17d5003599651956e524a38b9ef59a77cba44bb8579c6b2662c727db40a938bc"),
             ("const chipDef =", "const q =", "8178b8c89fbbf120276c4b6a22bb04a3eda8c61325f979e3d33ee7b781641502"),
-            ("const q =", "const updatedEl =", "577ed9c7c88fa78be7956caaad23a31bcefbeb015eee036132d593b02a49b9c1"),
+            ("const q =", "const updatedEl =", "e2d5233d4e704d7d52e2981ca932f6f863efc711121c68937a1b6399e39d8560"),
         ]
         for start, end, digest in expected:
             block = source[source.index(start):source.index(end)]

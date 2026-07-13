@@ -950,7 +950,10 @@ def load_dream_theme_summary_v2(
 
 def render_dream_theme_pie(summary):
     center = 160
-    radius = 128
+    radius = 106
+    leader_start_radius = radius + 3
+    leader_end_radius = radius + 20
+    label_radius = radius + 34
     angle = -90.0
     paths = []
     markers = []
@@ -1019,21 +1022,20 @@ def render_dream_theme_pie(summary):
         paths.append(path_markup)
 
         middle = angle + sweep / 2
-        sweep_radians = math.radians(sweep)
-        marker_percent_text = "0%" if percent == 0 else f"{percent:.0f}%"
-        marker_distance = (
-            0
-            if len(nonzero) == 1
-            else 4 * radius * math.sin(sweep_radians / 2) / (3 * sweep_radians)
-        )
-        marker_x, marker_y = point(middle, marker_distance)
-        text_color = "#ffffff" if opacity >= 0.7 else "#000000"
+        line_x1, line_y1 = point(middle, leader_start_radius)
+        line_x2, line_y2 = point(middle, leader_end_radius)
+        marker_x, marker_y = point(middle, label_radius)
         markers.append(
+            f'<line x1="{line_x1:.3f}" y1="{line_y1:.3f}" '
+            f'x2="{line_x2:.3f}" y2="{line_y2:.3f}" '
+            f'stroke="{DREAM_THEME_CHART_COLOR}" stroke-opacity="0.5" stroke-width="1.5" '
+            f'data-dream-theme-line="{theme_id}" data-chart-line-opacity="0.5" '
+            'class="dream-theme-leader" aria-hidden="true" pointer-events="none" />'
             f'<text x="{marker_x:.3f}" y="{marker_y + 0.5:.3f}" text-anchor="middle" '
-            f'dominant-baseline="middle" fill="{text_color}" fill-opacity="0.5" '
-            f'data-dream-theme-percent="{theme_id}" data-chart-text-color="{text_color}" '
-            'font-size="10" font-weight="600" '
-            f'class="dream-theme-percent" aria-hidden="true" pointer-events="none">{marker_percent_text}</text>'
+            'dominant-baseline="middle" fill="#000000" fill-opacity="0.5" '
+            f'data-dream-theme-percent="{theme_id}" data-chart-text-color="#000000" '
+            'font-size="11" font-weight="600" '
+            f'class="dream-theme-percent" aria-hidden="true" pointer-events="none">{percent_text}</text>'
         )
         angle = end
 
@@ -1063,7 +1065,7 @@ def render_dream_theme_pie(summary):
       <div class="mx-auto w-full max-w-xs">
         <svg viewBox="0 0 320 320" role="group" aria-labelledby="dream-pie-title dream-pie-desc" class="block h-auto w-full overflow-visible">
           <title id="dream-pie-title">Primary Dream theme distribution</title>
-          <desc id="dream-pie-desc">A seven-part interactive pie chart of primary themes, ordered from the smallest, lightest group to the largest, darkest group. Each percentage label sits at the visual center of its slice. Select a slice to filter responses whose primary theme matches it; co-dominant themes remain listed on each response.</desc>
+          <desc id="dream-pie-desc">A seven-part interactive pie chart of primary themes, ordered from the smallest, lightest group to the largest, darkest group. Each exact percentage sits outside its slice at the end of a leader line. Select a slice to filter responses whose primary theme matches it; co-dominant themes remain listed on each response.</desc>
           {''.join(paths)}
           {''.join(markers)}
         </svg>
@@ -1304,7 +1306,14 @@ function renderDreamThemeSelection() {
   }
   for (const label of dreamThemeSection.querySelectorAll("[data-dream-theme-percent]")) {
     const selected = label.dataset.dreamThemePercent === activeDreamTheme;
-    label.setAttribute("fill", selected ? "#ffffff" : label.dataset.chartTextColor);
+    label.setAttribute("fill", selected ? "#e11d48" : label.dataset.chartTextColor);
+    label.setAttribute("fill-opacity", selected ? "1" : "0.5");
+    label.style.opacity = activeDreamTheme && !selected ? "0.5" : "1";
+  }
+  for (const line of dreamThemeSection.querySelectorAll("[data-dream-theme-line]")) {
+    const selected = line.dataset.dreamThemeLine === activeDreamTheme;
+    line.setAttribute("stroke-opacity", selected ? "1" : line.dataset.chartLineOpacity);
+    line.style.opacity = activeDreamTheme && !selected ? "0.5" : "1";
   }
 }
 
