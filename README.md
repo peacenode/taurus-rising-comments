@@ -104,7 +104,7 @@ for styles/font). It keeps the six existing placement graphs and adds an
 interactive Dreams pie with a selectable theme list. Choosing either a theme
 row or its pie slice filters the same response list and composes with placement
 filters and search. Both run from the smallest, lightest group to the largest,
-fully solid group. Regenerate after data or theme changes with
+fully solid group, using one even color step per theme. Regenerate after data or theme changes with
 `python3 build_page.py` (also rewrites `data/extracted.csv`). The build fails if
 a non-empty Dream is missing an assignment, a source digest is stale, or the
 required secondary review is incomplete.

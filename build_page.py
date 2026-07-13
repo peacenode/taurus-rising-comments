@@ -216,16 +216,14 @@ def render_dream_theme_pie(summary):
         summary["themes"],
         key=lambda theme: (theme["count"], THEME_ID_ORDER.index(theme["id"])),
     )
-    positive_counts = [theme["count"] for theme in ordered_themes if theme["count"]]
-    minimum_count = min(positive_counts, default=0)
-    maximum_count = max(positive_counts, default=0)
-
-    def fill_opacity(count):
-        if not count:
-            return 0.06
-        if minimum_count == maximum_count:
-            return 1.0
-        return 0.1 + 0.9 * ((count - minimum_count) / (maximum_count - minimum_count))
+    opacity_by_theme = {
+        theme["id"]: (
+            1.0
+            if len(ordered_themes) == 1
+            else 0.1 + 0.9 * index / (len(ordered_themes) - 1)
+        )
+        for index, theme in enumerate(ordered_themes)
+    }
 
     def point(degrees, distance):
         radians = math.radians(degrees)
@@ -236,7 +234,7 @@ def render_dream_theme_pie(summary):
         count = theme["count"]
         if not count:
             continue
-        opacity = fill_opacity(count)
+        opacity = opacity_by_theme[theme["id"]]
         sweep = count / summary["total_theme_assignments"] * 360
         end = angle + sweep
         label = html_lib.escape(theme["label"])
@@ -293,7 +291,7 @@ def render_dream_theme_pie(summary):
         label = html_lib.escape(theme["label"])
         description = html_lib.escape(theme["description"])
         theme_id = html_lib.escape(theme["id"])
-        opacity = fill_opacity(theme["count"])
+        opacity = opacity_by_theme[theme["id"]]
         legend.append(f'''
         <li class="border-t border-neutral-200 py-1 first:border-t-0 first:pt-0">
           <button type="button" data-dream-theme="{theme_id}" aria-pressed="false" aria-controls="list"
@@ -314,7 +312,7 @@ def render_dream_theme_pie(summary):
       <div class="mx-auto w-full max-w-xs">
         <svg viewBox="0 0 320 320" role="group" aria-labelledby="dream-pie-title dream-pie-desc" class="block h-auto w-full overflow-visible">
           <title id="dream-pie-title">Dream theme assignment distribution</title>
-          <desc id="dream-pie-desc">A seven-part interactive pie chart ordered from the smallest, lightest theme to the largest, darkest theme. Each slice shows its percentage of all theme assignments. Select a slice to filter the responses and its matching theme in the list.</desc>
+          <desc id="dream-pie-desc">A seven-part interactive pie chart ordered from the smallest, lightest theme to the largest, darkest theme, with evenly stepped color intensity. Each slice shows its percentage of all theme assignments. Select a slice to filter the responses and its matching theme in the list.</desc>
           {''.join(paths)}
           <circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="#a3a3a3" stroke-width="1" pointer-events="none" />
           {''.join(markers)}

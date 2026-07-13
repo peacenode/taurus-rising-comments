@@ -303,7 +303,7 @@ class DreamThemeRenderTests(unittest.TestCase):
         expected = [
             ("freedom", "0.100"),
             ("service", "0.250"),
-            ("home-belonging", "0.550"),
+            ("home-belonging", "0.400"),
             ("cultivation", "0.550"),
             ("stewardship", "0.700"),
             ("self-sufficiency", "0.850"),
