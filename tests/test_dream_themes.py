@@ -264,18 +264,21 @@ class IsolatedDreamThemeValidationTests(unittest.TestCase):
 
 
 class DreamThemeRenderTests(unittest.TestCase):
-    def test_single_theme_renders_a_full_circle_and_zero_percentages(self):
+    def test_single_theme_renders_a_full_circle_and_percentage_label(self):
         markup = build_page.render_dream_theme_pie(render_summary([3, 0, 0, 0, 0, 0, 0]))
         self.assertIn('<circle cx="160" cy="160" r="128" fill="#171717"', markup)
         self.assertNotIn('<path d="M 160 160', markup)
         self.assertIn('data-dream-theme="home-belonging" role="button"', markup)
         self.assertIn("Home / Belonging: 3 assignments, 100.0%", markup)
+        self.assertIn("100.0%</text>", markup)
         self.assertEqual(markup.count('class="dream-theme-option'), 7)
 
-    def test_narrow_slice_renders_a_leader_line_and_numbered_markers(self):
+    def test_narrow_slice_renders_a_leader_line_and_percentage_labels(self):
         markup = build_page.render_dream_theme_pie(render_summary([99, 1, 0, 0, 0, 0, 0]))
         self.assertEqual(markup.count("<line "), 1)
-        self.assertEqual(markup.count('r="11"'), 2)
+        self.assertEqual(markup.count('class="dream-theme-percent"'), 2)
+        self.assertIn("99.0%</text>", markup)
+        self.assertIn("1.0%</text>", markup)
         self.assertIn('aria-label="Select Home / Belonging"', markup)
         self.assertIn('aria-label="Select Cultivation"', markup)
 
@@ -284,6 +287,8 @@ class DreamThemeRenderTests(unittest.TestCase):
         self.assertEqual(markup.count("<li class="), 7)
         self.assertEqual(markup.count('class="dream-theme-option'), 7)
         self.assertEqual(markup.count('class="dream-theme-slice'), 7)
+        self.assertEqual(markup.count('class="dream-theme-percent"'), 7)
+        self.assertNotIn("dream-theme-number", markup)
         positions = [markup.index(theme["label"]) for theme in TAXONOMY["themes"]]
         self.assertEqual(positions, sorted(positions))
         self.assertIn('role="group" aria-labelledby="dream-pie-title dream-pie-desc"', markup)
