@@ -611,7 +611,7 @@ class DreamThemeRenderTests(unittest.TestCase):
     def test_single_theme_renders_a_full_circle_and_percentage_label(self):
         markup = build_page.render_dream_theme_pie(render_summary([3, 0, 0, 0, 0, 0, 0]))
         self.assertIn(
-            '<circle cx="160" cy="160" r="114" fill="#e11d48" fill-opacity="1.000"',
+            '<circle cx="160" cy="160" r="116" fill="#e11d48" fill-opacity="1.000"',
             markup,
         )
         self.assertNotIn('<path d="M 160 160', markup)
