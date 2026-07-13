@@ -266,7 +266,10 @@ class IsolatedDreamThemeValidationTests(unittest.TestCase):
 class DreamThemeRenderTests(unittest.TestCase):
     def test_single_theme_renders_a_full_circle_and_percentage_label(self):
         markup = build_page.render_dream_theme_pie(render_summary([3, 0, 0, 0, 0, 0, 0]))
-        self.assertIn('<circle cx="160" cy="160" r="128" fill="#171717"', markup)
+        self.assertIn(
+            '<circle cx="160" cy="160" r="128" fill="#171717" fill-opacity="1.000"',
+            markup,
+        )
         self.assertNotIn('<path d="M 160 160', markup)
         self.assertIn('data-dream-theme="home-belonging" role="button"', markup)
         self.assertIn("Home / Belonging: 3 assignments, 100.0%", markup)
@@ -294,6 +297,29 @@ class DreamThemeRenderTests(unittest.TestCase):
         self.assertIn('role="group" aria-labelledby="dream-pie-title dream-pie-desc"', markup)
         self.assertEqual(markup.count('id="dream-pie-title"'), 1)
         self.assertEqual(markup.count('id="dream-pie-desc"'), 1)
+
+    def test_chart_and_legend_run_from_smallest_lightest_to_largest_solid(self):
+        markup = build_page.render_dream_theme_pie(render_summary([4, 4, 2, 1, 5, 6, 7]))
+        expected = [
+            ("freedom", "0.100"),
+            ("service", "0.250"),
+            ("home-belonging", "0.550"),
+            ("cultivation", "0.550"),
+            ("stewardship", "0.700"),
+            ("self-sufficiency", "0.850"),
+            ("transmission", "1.000"),
+        ]
+        chart, legend = markup.split('<ol class="min-w-0">', 1)
+        for section in (chart, legend):
+            positions = [section.index(f'data-dream-theme="{theme_id}"') for theme_id, _ in expected]
+            self.assertEqual(positions, sorted(positions))
+        for theme_id, opacity in expected:
+            chart_pattern = (
+                rf'fill="#171717" fill-opacity="{opacity}"[^>]*'
+                rf'data-dream-theme="{theme_id}"'
+            )
+            self.assertRegex(chart, chart_pattern)
+            self.assertIn(f'background:rgba(23,23,23,{opacity})', legend)
 
 
 class ProductionDreamThemeTests(unittest.TestCase):
@@ -393,6 +419,22 @@ class ProductionDreamThemeTests(unittest.TestCase):
         self.assertEqual(section.count('class="dream-theme-slice'), 7)
         self.assertIn('>Dreams</h2>', section)
         self.assertIn("Select a theme or pie slice to explore the responses it appears in", section)
+        expected_ids = [
+            "stewardship",
+            "transmission",
+            "service",
+            "home-belonging",
+            "cultivation",
+            "freedom",
+            "self-sufficiency",
+        ]
+        chart, legend = section.split('<ol class="min-w-0">', 1)
+        for rendered_section in (chart, legend):
+            positions = [
+                rendered_section.index(f'data-dream-theme="{theme_id}"')
+                for theme_id in expected_ids
+            ]
+            self.assertEqual(positions, sorted(positions))
         self.assertIn('id="stats"', self.html)
         for label in ("Venus sign", "Venus house", "North node sign", "North node house", "Saturn sign", "Saturn house"):
             self.assertEqual(self.html.count(f'["{label}"'), 1)

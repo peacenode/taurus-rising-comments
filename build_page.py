@@ -209,15 +209,31 @@ def render_dream_theme_pie(summary):
     paths = []
     markers = []
 
+    ordered_themes = sorted(
+        summary["themes"],
+        key=lambda theme: (theme["count"], THEME_ID_ORDER.index(theme["id"])),
+    )
+    positive_counts = [theme["count"] for theme in ordered_themes if theme["count"]]
+    minimum_count = min(positive_counts, default=0)
+    maximum_count = max(positive_counts, default=0)
+
+    def fill_opacity(count):
+        if not count:
+            return 0.06
+        if minimum_count == maximum_count:
+            return 1.0
+        return 0.1 + 0.9 * ((count - minimum_count) / (maximum_count - minimum_count))
+
     def point(degrees, distance):
         radians = math.radians(degrees)
         return center + distance * math.cos(radians), center + distance * math.sin(radians)
 
-    nonzero = [theme for theme in summary["themes"] if theme["count"]]
-    for theme in summary["themes"]:
+    nonzero = [theme for theme in ordered_themes if theme["count"]]
+    for theme in ordered_themes:
         count = theme["count"]
         if not count:
             continue
+        opacity = fill_opacity(count)
         sweep = count / summary["total_theme_assignments"] * 360
         end = angle + sweep
         label = html_lib.escape(theme["label"])
@@ -232,7 +248,8 @@ def render_dream_theme_pie(summary):
         )
         if len(nonzero) == 1:
             path_markup = (
-                f'<circle cx="{center}" cy="{center}" r="{radius}" fill="{theme["color"]}" '
+                f'<circle cx="{center}" cy="{center}" r="{radius}" fill="#171717" '
+                f'fill-opacity="{opacity:.3f}" '
                 f'stroke="#ffffff" stroke-width="2" {interaction_attrs}>'
                 f'<title>{title}</title></circle>'
             )
@@ -243,7 +260,8 @@ def render_dream_theme_pie(summary):
             path_markup = (
                 f'<path d="M {center} {center} L {x1:.3f} {y1:.3f} '
                 f'A {radius} {radius} 0 {large_arc} 1 {x2:.3f} {y2:.3f} Z" '
-                f'fill="{theme["color"]}" stroke="#ffffff" stroke-width="2" {interaction_attrs}>'
+                f'fill="#171717" fill-opacity="{opacity:.3f}" '
+                f'stroke="#ffffff" stroke-width="2" {interaction_attrs}>'
                 f'<title>{title}</title></path>'
             )
         paths.append(path_markup)
@@ -268,15 +286,16 @@ def render_dream_theme_pie(summary):
         angle = end
 
     legend = []
-    for theme in summary["themes"]:
+    for theme in ordered_themes:
         label = html_lib.escape(theme["label"])
         description = html_lib.escape(theme["description"])
         theme_id = html_lib.escape(theme["id"])
+        opacity = fill_opacity(theme["count"])
         legend.append(f'''
         <li class="border-t border-neutral-200 py-1 first:border-t-0 first:pt-0">
           <button type="button" data-dream-theme="{theme_id}" aria-pressed="false" aria-controls="list"
             class="dream-theme-option group grid w-full grid-cols-[0.75rem_1fr] gap-x-2.5 gap-y-1 rounded-lg px-2 py-3 text-left transition-colors hover:bg-neutral-950/[0.03] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 aria-pressed:bg-neutral-950/[0.04]">
-            <span class="mt-1 block size-3 rounded-sm border border-neutral-300 group-aria-pressed:ring-2 group-aria-pressed:ring-neutral-900 group-aria-pressed:ring-offset-2" style="background:{theme['color']}"></span>
+            <span class="mt-1 block size-3 rounded-sm border border-neutral-300 group-aria-pressed:ring-2 group-aria-pressed:ring-neutral-900 group-aria-pressed:ring-offset-2" style="background:rgba(23,23,23,{opacity:.3f})"></span>
             <span class="text-sm font-medium">{label}</span>
             <span class="col-start-2 text-xs leading-relaxed text-neutral-500">{description}</span>
           </button>
@@ -292,7 +311,7 @@ def render_dream_theme_pie(summary):
       <div class="mx-auto w-full max-w-xs">
         <svg viewBox="0 0 320 320" role="group" aria-labelledby="dream-pie-title dream-pie-desc" class="block h-auto w-full overflow-visible">
           <title id="dream-pie-title">Dream theme assignment distribution</title>
-          <desc id="dream-pie-desc">A seven-part interactive pie chart. Each slice shows its percentage of all theme assignments. Select a slice to filter the responses and its matching theme in the list.</desc>
+          <desc id="dream-pie-desc">A seven-part interactive pie chart ordered from the smallest, lightest theme to the largest, darkest theme. Each slice shows its percentage of all theme assignments. Select a slice to filter the responses and its matching theme in the list.</desc>
           {''.join(paths)}
           <circle cx="{center}" cy="{center}" r="{radius}" fill="none" stroke="#a3a3a3" stroke-width="1" pointer-events="none" />
           {''.join(markers)}
