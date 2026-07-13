@@ -1,0 +1,13 @@
+.env*
+.git
+.vercel
+__pycache__
+avatars
+data
+plans
+raw
+tests
+*.py
+*.csv
+README.md
+make_og.sh

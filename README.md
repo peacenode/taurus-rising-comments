@@ -26,6 +26,18 @@ they've attracted.
   `text`, and extracted fields (`venus_sign/house`, `nn_sign/house`,
   `saturn_sign/house`, `dreams`, `lessons_attracted`, `life_events`, `notes`)
 - `data/extracted.csv` — same data flattened for spreadsheets
+- `data/dream_themes_v2.json` — current seven-theme dominant-outcome taxonomy,
+  public descriptions, scoring rubric, and private classification boundaries
+- `data/dream_theme_calibration_v2.json` — 38 source-linked calibration anchors;
+  these rows are excluded from the 200-response agreement evaluation set
+- `data/dream_theme_assignments_v2.json` — current primary, co-dominant, and
+  private supporting classifications for every non-empty Dream response
+- `data/dream_theme_review_v2.json` — both full independent passes, the baseline
+  and calibrated reconsideration trail, agreement metrics, adjudications, and
+  source/taxonomy/calibration digests
+- `data/dream_themes.json`, `data/dream_theme_assignments.json`, and
+  `data/dream_theme_review.json` — preserved version 1 multi-label provenance;
+  the page no longer reads these files
 - `data/new_batch6.json` — the 67 reviewed rows added by the Jul 12 refresh
 - `data/new_batch6_page*_raw.json` — all eight provider pages from the Jul 12
   cursor walk, retained before normalization
@@ -39,6 +51,16 @@ they've attracted.
 Extraction was done by LLM reading of each comment, not regex. Paraphrased
 fields (`dreams`, `lessons_attracted`, `life_events`) summarize the commenter's
 own words; `text` is always verbatim for re-checking.
+
+Dream themes are assigned by reading each response, not by keyword search.
+Version 2 gives each qualifying response one primary outcome and adds a
+co-dominant theme only for a separate, comparably emphasized aspiration; weaker
+means, settings, beneficiaries, and consequences remain private supporting
+evidence. The pie therefore shows the share of themed responses by primary
+theme, while each response lists its primary and any co-dominant themes as a
+clean comma-separated line. Theme descriptions appear once in the chart list;
+scores, evidence, rejected candidates, and detailed boundaries stay out of the
+page and deployment.
 
 ## Caveats
 
@@ -79,9 +101,20 @@ own words; `text` is always verbatim for re-checking.
 - Saturn house: 12th 55, 10th 44, 11th 43, 1st 33, 8th 28
 - 238/355 shared dreams, 189/355 named lessons/attraction patterns, 161/355
   described hardships/life events
+- Dream themes: 193/238 responses have a qualifying primary theme — Freedom 70,
+  Self-Sufficiency 36, Home / Belonging 33, Cultivation 26, Service 14,
+  Transmission 9, and Stewardship 5. Another 63 responses have one
+  co-dominant theme, and 17 have two.
 
 ## Page
 
 `index.html` — self-contained viewer (inline Tailwind via CDN, needs network
-for styles/font). Regenerate after data changes with `python3 build_page.py`
-(also rewrites `data/extracted.csv`).
+for styles/font). It keeps the six existing placement graphs and adds an
+interactive primary-theme pie with a selectable theme list. Choosing either a
+theme row or its pie slice filters the same response list by that primary theme
+and composes with placement filters and search; co-dominant themes remain
+visible on each response. Both run from the smallest, lightest group to the
+largest, fully solid group, using one even color step per theme. Regenerate
+after data or theme changes with `python3 build_page.py` (also rewrites
+`data/extracted.csv`). The build fails if coverage, source evidence, provenance,
+agreement gates, or adjudication records are incomplete or stale.
