@@ -734,9 +734,10 @@ class ProductionDreamThemeTests(unittest.TestCase):
         source = {source_key(row): row for row in dream_rows}
         assignments = self.assignments_doc["assignments"]
         assignment_keys = [(item["username"], item["created_time"]) for item in assignments]
-        self.assertEqual(len(dream_rows), 238)
+        self.assertEqual(len(dream_rows), 319)
         self.assertEqual(len(assignments), 238)
-        self.assertEqual(set(assignment_keys), set(source))
+        self.assertLess(set(assignment_keys), set(source))
+        self.assertEqual(len(set(source) - set(assignment_keys)), 81)
         self.assertEqual(len(assignment_keys), len(set(assignment_keys)))
         for assignment in assignments:
             key = assignment["username"], assignment["created_time"]
@@ -867,9 +868,10 @@ class ProductionDreamThemeTests(unittest.TestCase):
         )
         self.assertIn('>Themes</h2>', section)
         self.assertIn(
-            "Themes on each response are listed primary first, followed by any co-dominant themes.",
+            "Themes are reviewed for 238 Dream responses; each reviewed response lists its primary theme first",
             section,
         )
+        self.assertIn("81 newer Dream responses are displayed below", section)
         self.assertIn("Primary Dream theme distribution", section)
         expected_ids = [
             theme["id"]
@@ -910,9 +912,9 @@ class ProductionDreamThemeTests(unittest.TestCase):
             "Roughly 16% of the fully-stated placements don&rsquo;t fit whole-sign, so some of those are off by a house.",
             placements_expanded,
         )
-        self.assertNotIn("Themes on each response", themes_summary)
+        self.assertNotIn("Themes are reviewed", themes_summary)
         self.assertIn(
-            "Themes on each response are listed primary first, followed by any co-dominant themes.",
+            "Themes are reviewed for 238 Dream responses",
             themes_expanded,
         )
         self.assertEqual(
@@ -922,7 +924,7 @@ class ProductionDreamThemeTests(unittest.TestCase):
             2,
         )
         self.assertEqual(self.html.count("group-open:pb-2"), 2)
-        self.assertIn("Filter responses by selecting placements or themes.", self.html)
+        self.assertIn("Filter responses by selecting placements or reviewed themes.", self.html)
         self.assertNotIn("Tap any sign or house to filter the messages.", self.html)
         self.assertNotIn("filter-count", self.html)
         self.assertEqual(self.html.count("group-open:rotate-180"), 2)
@@ -969,7 +971,7 @@ class ProductionDreamThemeTests(unittest.TestCase):
             )
             for item in self.assignments_doc["assignments"]
         }
-        self.assertEqual(len(embedded_rows), 355)
+        self.assertEqual(len(embedded_rows), 467)
         for row in embedded_rows:
             expected_primary, expected_public = assignment_by_key.get(
                 (row["username"], row["created_time"]),
@@ -996,7 +998,7 @@ class ProductionDreamThemeTests(unittest.TestCase):
         self.assertEqual(section.count('data-dream-theme="'), control_count)
         self.assertEqual(section.count('aria-pressed="false"'), control_count)
         self.assertIn('aria-controls="list"', section)
-        self.assertIn("Themes on each response are listed primary first", section)
+        self.assertIn("Themes are reviewed for 238 Dream responses", section)
         self.assertIn('aria-label="Select primary theme ', section)
         self.assertIn('role="status" aria-live="polite" aria-atomic="true"', self.html)
         self.assertIn('dreamThemeSection.addEventListener("click"', self.html)
@@ -1054,7 +1056,7 @@ class ProductionDreamThemeTests(unittest.TestCase):
         source = (ROOT / "build_page.py").read_text()
         expected = [
             ("const filters =", "const chipDef =", "3d8d1f99e3c2efcd215037ad5696f574708598ff37d2eaf0eb12caf1cb2da467"),
-            ("const chipDef =", "const q =", "8178b8c89fbbf120276c4b6a22bb04a3eda8c61325f979e3d33ee7b781641502"),
+            ("const chipDef =", "const q =", "1525e056631c2026a2edea3f4270f7bd71daf26079f861daefa86b126f579753"),
             ("const q =", "const updatedEl =", "de473f78141136160e0f503a7ad96f0aca241b91e20b0e3566f4ac3530f6cdf6"),
         ]
         for start, end, digest in expected:

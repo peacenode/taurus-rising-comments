@@ -765,17 +765,6 @@ def load_dream_theme_summary_v2(
     for row in dream_rows:
         if not isinstance(row.get("text"), str):
             raise ValueError("Dream response text must be a string")
-    if len(dream_rows) == DREAM_THEME_V2_EXPECTED_DREAM_ROWS:
-        if not calibration_keys <= set(source_by_key):
-            raise ValueError("Dream theme v2 calibration identities are stale")
-        for anchor in calibration["rows"]:
-            key = anchor["username"], anchor["created_time"]
-            quotes = anchor.get("evidence_quotes")
-            if not isinstance(quotes, list) or not quotes or not all(
-                isinstance(quote, str) and quote in source_by_key[key]["text"]
-                for quote in quotes
-            ):
-                raise ValueError("Dream theme v2 calibration evidence is stale")
 
     if assignment_doc.get("schema_version") != 2 or assignment_doc.get("taxonomy_version") != 2:
         raise ValueError("Dream assignment schema and taxonomy versions must be 2")
@@ -790,12 +779,12 @@ def load_dream_theme_summary_v2(
         raise ValueError("Dream assignment supersedes metadata is invalid")
     if assignment_doc.get("source_digest_algorithm") != DREAM_THEME_V2_SOURCE_DIGEST_ALGORITHM:
         raise ValueError("Dream assignment source digest algorithm is invalid")
-    if assignment_doc.get("source_row_count") != len(dream_rows):
-        raise ValueError("Dream assignment source_row_count is stale")
 
     assignments = assignment_doc.get("assignments")
     if not isinstance(assignments, list):
         raise ValueError("Dream theme v2 assignments must be an array")
+    if assignment_doc.get("source_row_count") != len(assignments):
+        raise ValueError("Dream assignment source_row_count is stale")
     theme_order = {theme_id: index for index, theme_id in enumerate(THEME_ID_ORDER)}
     assignments_by_key = {}
     public_assignments = []
@@ -912,13 +901,27 @@ def load_dream_theme_summary_v2(
         })
         assignments_by_key[key] = assignment
 
-    if set(assignments_by_key) != set(source_by_key):
-        raise ValueError("Dream theme v2 assignments must cover every Dream response exactly once")
+    if len(assignments_by_key) == DREAM_THEME_V2_EXPECTED_DREAM_ROWS:
+        if not calibration_keys <= set(assignments_by_key):
+            raise ValueError("Dream theme v2 calibration identities are stale")
+        for anchor in calibration["rows"]:
+            key = anchor["username"], anchor["created_time"]
+            quotes = anchor.get("evidence_quotes")
+            if not isinstance(quotes, list) or not quotes or not all(
+                isinstance(quote, str) and quote in source_by_key[key]["text"]
+                for quote in quotes
+            ):
+                raise ValueError("Dream theme v2 calibration evidence is stale")
+
+    reviewed_source_by_key = {
+        key: source_by_key[key]
+        for key in assignments_by_key
+    }
 
     _validate_dream_theme_review_v2(
         review,
         assignments_by_key=assignments_by_key,
-        source_by_key=source_by_key,
+        source_by_key=reviewed_source_by_key,
         taxonomy_digest=taxonomy_digest,
         calibration_digest=calibration_digest,
         calibration_keys=calibration_keys,
@@ -940,7 +943,9 @@ def load_dream_theme_summary_v2(
         })
     return {
         "taxonomy_version": 2,
-        "reviewed_dream_count": len(dream_rows),
+        "reviewed_dream_count": len(assignments_by_key),
+        "total_dream_count": len(dream_rows),
+        "unreviewed_dream_count": len(dream_rows) - len(assignments_by_key),
         "themed_response_count": themed_response_count,
         "total_primary_responses": themed_response_count,
         "themes": public_themes,
@@ -1048,6 +1053,17 @@ def render_dream_theme_pie(summary):
           </button>
         </li>''')
 
+    unreviewed_count = summary.get("unreviewed_dream_count", 0)
+    theme_scope = (
+        f"Themes are reviewed for {summary['reviewed_dream_count']} Dream responses; "
+        "each reviewed response lists its primary theme first, followed by any co-dominant themes."
+    )
+    if unreviewed_count:
+        theme_scope += (
+            f" {unreviewed_count} newer Dream responses are displayed below "
+            "but are not included in this chart yet."
+        )
+
     return f'''
   <section id="dream-themes" class="mt-2">
     <details id="dream-themes-disclosure" class="group">
@@ -1056,12 +1072,12 @@ def render_dream_theme_pie(summary):
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-neutral-400 transition-transform group-open:rotate-180" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
       </summary>
       <div class="pb-8">
-        <p class="mx-auto max-w-prose text-center text-sm text-neutral-500 text-balance">Themes on each response are listed primary first, followed by any co-dominant themes.</p>
+        <p class="mx-auto max-w-prose text-center text-sm text-neutral-500 text-balance">{html_lib.escape(theme_scope)}</p>
         <div class="mt-8 grid items-start gap-8 md:grid-cols-[minmax(0,20rem)_1fr] md:gap-10">
           <div class="mx-auto w-full max-w-xs">
             <svg viewBox="0 0 320 320" role="group" aria-labelledby="dream-pie-title dream-pie-desc" class="block h-auto w-full overflow-visible">
               <title id="dream-pie-title">Primary Dream theme distribution</title>
-              <desc id="dream-pie-desc">A seven-part interactive pie chart of primary themes, ordered from the smallest, lightest group to the largest, darkest group. Each exact percentage begins just outside its slice. Select a slice to filter responses whose primary theme matches it; co-dominant themes remain listed on each response.</desc>
+              <desc id="dream-pie-desc">A seven-part interactive pie chart of reviewed primary themes, ordered from the smallest, lightest group to the largest, darkest group. Each exact percentage begins just outside its slice. Select a slice to filter responses whose reviewed primary theme matches it; co-dominant themes remain listed on reviewed responses.</desc>
               {''.join(paths)}
               {''.join(markers)}
             </svg>
@@ -1130,7 +1146,7 @@ tailwind.config = {
     <p class="mt-2.5 mx-auto text-sm text-neutral-500 max-w-prose text-balance">
       Taurus risings to share their Venus, north node, and Saturn placements,
       along with their dreams and the lessons they&rsquo;ve attracted.
-      Filter responses by selecting placements or themes.
+      Filter responses by selecting placements or reviewed themes.
     </p>
     <p class="mt-3">
       <span class="inline-flex items-center gap-1.5 rounded-full bg-neutral-950/[0.03] px-3 py-1 text-xs text-neutral-500">
@@ -1269,6 +1285,8 @@ function entryHTML(r) {
     ["Dreams", r.dreams && esc(r.dreams)],
     ["Themes", themeNames && esc(themeNames)],
     ["Lessons", r.lessons_attracted && esc(r.lessons_attracted)],
+    ["Events", r.life_events && esc(r.life_events)],
+    ["Notes", r.notes && esc(r.notes)],
   ].filter(([, v]) => v)
    .map(([k, v]) => `
     <div class="grid grid-cols-[4.5rem_1fr] gap-x-3">
